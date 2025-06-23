@@ -8,5 +8,13 @@
 #ifndef osdefs_h
 #define osdefs_h
 
+#ifdef WIN32
+#include "os/oswin.h"
+#endif
+
+#ifdef __APPLE__
+#include "osunix.h"
+#endif
+
 
 #endif /* osdefs_h */

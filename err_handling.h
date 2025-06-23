@@ -8,6 +8,31 @@
 #ifndef err_handling_h
 #define err_handling_h
 
-#include <stdio.h>
+#include "os/osdefs.h"
+
+#define MAX_ERR_MSG_LEN (255)
+
+typedef enum {
+    SCF_SUCCESS = 0
+    ,SCF_OUT_OF_MEMORY
+    ,SCF_LOGIC_ERROR
+    ,SCF_OS_ERROR
+} scf_error_type;
+
+
+
+typedef struct scf_err_info {
+    scf_error_type type;
+    scf_os_error_code os_error_code;
+    char message[MAX_ERR_MSG_LEN + 1];
+} scf_err_info;
+
+typedef void (*scf_err_handler)(void);
+
+void scf_set_err_handler(scf_err_handler handler);
+
+void scf_fatal_error(const char *filename, int line_number, const char *msg);
+
+#define SCF_FATAL_ERROR(msg) scf_fatal_error(__FILE__, __LINE__, (msg))
 
 #endif /* err_handling_h */

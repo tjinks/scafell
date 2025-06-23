@@ -1,6 +1,15 @@
 BEGIN {
 	FS = ";"
-	print("uc_info uc_database[] = {")
+    print("/* Warning - this file was built by a tool */\n");
+    print("#include \"ucdb.h\"\n")
+    print("static struct {");
+    print("    int codepoint;");
+    print("    scf_char_category category;");
+    print("    int digit_value;");
+    print("    int uc_codepoint;");
+    print("    int lc_codepoint;");
+    print("    int tc_codepoint;");
+	print("} uc_database[] = {")
 	first = 1
 }
 

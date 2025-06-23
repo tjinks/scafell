@@ -6,9 +6,54 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		EA082FA92E06963600C0F207 /* str.h in Headers */ = {isa = PBXBuildFile; fileRef = EA082FA72E06963600C0F207 /* str.h */; };
+		EA082FAA2E06963600C0F207 /* str.c in Sources */ = {isa = PBXBuildFile; fileRef = EA082FA82E06963600C0F207 /* str.c */; };
+		EA082FAE2E06C01A00C0F207 /* unicode_data.h in Sources */ = {isa = PBXBuildFile; fileRef = EA082FAD2E06C01A00C0F207 /* unicode_data.h */; };
+		EA082FB12E06C0D600C0F207 /* ucdb.h in Headers */ = {isa = PBXBuildFile; fileRef = EA082FAF2E06C0D600C0F207 /* ucdb.h */; };
+		EA082FB22E06C0D600C0F207 /* ucdb.c in Sources */ = {isa = PBXBuildFile; fileRef = EA082FB02E06C0D600C0F207 /* ucdb.c */; };
+		EA707A0F2E00077A0084BFDD /* datum.c in Sources */ = {isa = PBXBuildFile; fileRef = EA707A0E2E00077A0084BFDD /* datum.c */; };
+		EA707A102E00077A0084BFDD /* datum.h in Headers */ = {isa = PBXBuildFile; fileRef = EA707A0D2E00077A0084BFDD /* datum.h */; };
+		EA707A132E0009680084BFDD /* mmgt.c in Sources */ = {isa = PBXBuildFile; fileRef = EA707A122E0009680084BFDD /* mmgt.c */; };
+		EA707A142E0009680084BFDD /* mmgt.h in Headers */ = {isa = PBXBuildFile; fileRef = EA707A112E0009680084BFDD /* mmgt.h */; };
+		EA707A172E0010980084BFDD /* list.c in Sources */ = {isa = PBXBuildFile; fileRef = EA707A162E0010980084BFDD /* list.c */; };
+		EA707A182E0010980084BFDD /* list.h in Headers */ = {isa = PBXBuildFile; fileRef = EA707A152E0010980084BFDD /* list.h */; };
+		EA707A1B2E001BAB0084BFDD /* hash.h in Headers */ = {isa = PBXBuildFile; fileRef = EA707A192E001BAB0084BFDD /* hash.h */; };
+		EA707A1C2E001BAB0084BFDD /* hash.c in Sources */ = {isa = PBXBuildFile; fileRef = EA707A1A2E001BAB0084BFDD /* hash.c */; };
+		EA707A1F2E005DD00084BFDD /* err_handling.c in Sources */ = {isa = PBXBuildFile; fileRef = EA707A1E2E005DD00084BFDD /* err_handling.c */; };
+		EA707A202E005DD00084BFDD /* err_handling.h in Headers */ = {isa = PBXBuildFile; fileRef = EA707A1D2E005DD00084BFDD /* err_handling.h */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
+		EA082F942E01763B00C0F207 /* ScafellTest.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ScafellTest.xcodeproj; path = ../ScafellTest/ScafellTest.xcodeproj; sourceTree = SOURCE_ROOT; };
+		EA082FA72E06963600C0F207 /* str.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = str.h; sourceTree = "<group>"; };
+		EA082FA82E06963600C0F207 /* str.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = str.c; sourceTree = "<group>"; };
+		EA082FAD2E06C01A00C0F207 /* unicode_data.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = unicode_data.h; sourceTree = "<group>"; };
+		EA082FAF2E06C0D600C0F207 /* ucdb.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ucdb.h; sourceTree = "<group>"; };
+		EA082FB02E06C0D600C0F207 /* ucdb.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = ucdb.c; sourceTree = "<group>"; };
+		EA082FB32E07E2CB00C0F207 /* ucbuilder.awk */ = {isa = PBXFileReference; lastKnownFileType = text; path = ucbuilder.awk; sourceTree = "<group>"; };
+		EA082FB42E07E31300C0F207 /* UnicodeData.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = UnicodeData.txt; sourceTree = "<group>"; };
+		EA082FC82E09510F00C0F207 /* ScafellTest.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ScafellTest.xcodeproj; path = ScafellTest2/ScafellTest.xcodeproj; sourceTree = "<group>"; };
 		EA707A062E0006A20084BFDD /* libscafell.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libscafell.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		EA707A0D2E00077A0084BFDD /* datum.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = datum.h; sourceTree = "<group>"; };
+		EA707A0E2E00077A0084BFDD /* datum.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = datum.c; sourceTree = "<group>"; };
+		EA707A112E0009680084BFDD /* mmgt.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mmgt.h; sourceTree = "<group>"; };
+		EA707A122E0009680084BFDD /* mmgt.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = mmgt.c; sourceTree = "<group>"; };
+		EA707A152E0010980084BFDD /* list.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = list.h; sourceTree = "<group>"; };
+		EA707A162E0010980084BFDD /* list.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = list.c; sourceTree = "<group>"; };
+		EA707A192E001BAB0084BFDD /* hash.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = hash.h; sourceTree = "<group>"; };
+		EA707A1A2E001BAB0084BFDD /* hash.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = hash.c; sourceTree = "<group>"; };
+		EA707A1D2E005DD00084BFDD /* err_handling.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = err_handling.h; sourceTree = "<group>"; };
+		EA707A1E2E005DD00084BFDD /* err_handling.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = err_handling.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		EA082F752E00605D00C0F207 /* os */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = os;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		EA707A042E0006A20084BFDD /* Frameworks */ = {
@@ -21,9 +66,36 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		EA082F972E01763B00C0F207 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		EA7079FD2E0006A20084BFDD = {
 			isa = PBXGroup;
 			children = (
+				EA082FC82E09510F00C0F207 /* ScafellTest.xcodeproj */,
+				EA082FB42E07E31300C0F207 /* UnicodeData.txt */,
+				EA082FB32E07E2CB00C0F207 /* ucbuilder.awk */,
+				EA082FAF2E06C0D600C0F207 /* ucdb.h */,
+				EA082FB02E06C0D600C0F207 /* ucdb.c */,
+				EA082FAD2E06C01A00C0F207 /* unicode_data.h */,
+				EA082F942E01763B00C0F207 /* ScafellTest.xcodeproj */,
+				EA082F752E00605D00C0F207 /* os */,
+				EA707A1D2E005DD00084BFDD /* err_handling.h */,
+				EA707A1E2E005DD00084BFDD /* err_handling.c */,
+				EA707A192E001BAB0084BFDD /* hash.h */,
+				EA707A1A2E001BAB0084BFDD /* hash.c */,
+				EA707A152E0010980084BFDD /* list.h */,
+				EA707A162E0010980084BFDD /* list.c */,
+				EA707A112E0009680084BFDD /* mmgt.h */,
+				EA707A122E0009680084BFDD /* mmgt.c */,
+				EA707A0D2E00077A0084BFDD /* datum.h */,
+				EA707A0E2E00077A0084BFDD /* datum.c */,
+				EA082FA82E06963600C0F207 /* str.c */,
+				EA082FA72E06963600C0F207 /* str.h */,
 				EA707A072E0006A20084BFDD /* Products */,
 			);
 			sourceTree = "<group>";
@@ -43,6 +115,13 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EA707A1B2E001BAB0084BFDD /* hash.h in Headers */,
+				EA707A102E00077A0084BFDD /* datum.h in Headers */,
+				EA082FA92E06963600C0F207 /* str.h in Headers */,
+				EA082FB12E06C0D600C0F207 /* ucdb.h in Headers */,
+				EA707A182E0010980084BFDD /* list.h in Headers */,
+				EA707A202E005DD00084BFDD /* err_handling.h in Headers */,
+				EA707A142E0009680084BFDD /* mmgt.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -60,6 +139,9 @@
 			buildRules = (
 			);
 			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				EA082F752E00605D00C0F207 /* os */,
 			);
 			name = scafell;
 			packageProductDependencies = (
@@ -94,6 +176,12 @@
 			preferredProjectObjectVersion = 77;
 			productRefGroup = EA707A072E0006A20084BFDD /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = EA082F972E01763B00C0F207 /* Products */;
+					ProjectRef = EA082F942E01763B00C0F207 /* ScafellTest.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				EA707A052E0006A20084BFDD /* scafell */,
@@ -106,6 +194,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EA082FAA2E06963600C0F207 /* str.c in Sources */,
+				EA707A172E0010980084BFDD /* list.c in Sources */,
+				EA707A132E0009680084BFDD /* mmgt.c in Sources */,
+				EA707A0F2E00077A0084BFDD /* datum.c in Sources */,
+				EA707A1F2E005DD00084BFDD /* err_handling.c in Sources */,
+				EA082FB22E06C0D600C0F207 /* ucdb.c in Sources */,
+				EA082FAE2E06C01A00C0F207 /* unicode_data.h in Sources */,
+				EA707A1C2E001BAB0084BFDD /* hash.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

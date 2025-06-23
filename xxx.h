@@ -1,15 +1,14 @@
 /* Warning - this file was built by a tool */
 
 #include "ucdb.h"
-
-static struct {
+struct {
     int codepoint;
     scf_char_category category;
     int digit_value;
     int uc_codepoint;
     int lc_codepoint;
     int tc_codepoint;
-} uc_database[] = {
+} uc_info uc_database[] = {
 {0x0000, UC_OTHER, -1, 0x0000, 0x0000, 0x0000}
 ,{0x0001, UC_OTHER, -1, 0x0001, 0x0001, 0x0001}
 ,{0x0002, UC_OTHER, -1, 0x0002, 0x0002, 0x0002}
