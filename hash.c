@@ -26,34 +26,40 @@ static int hash(scf_dictionary *d, scf_datum key) {
     return h % d->capacity;
 }
 
+typedef enum {
+    MATCH, NO_MATCH, TRY_AGAIN
+} match_status;
+
+static match_status is_match(scf_dictionary *d, scf_datum key, bool inserting, int index, int collisions) {
+    scf_dictionary_item item = d->items[index];
+    bool found = d->comparison_func(item.key, key);
+    if (inserting) {
+        found = found || item.key.type == DT_NONE;
+    } else {
+        if (!found && collisions > d->max_collisions) {
+            return NO_MATCH;
+        }
+    }
+    
+    return found ? MATCH : TRY_AGAIN;
+}
+
 static int lookup(scf_dictionary *d, scf_datum key, bool inserting) {
     int index = hash(d, key);
     
     int inc = 0;
     int collisions = 0;
     for (;;) {
-        scf_dictionary_item item = d->items[index];
-        bool found;
-        if (inserting) {
-            found = item.key.type == DT_NONE || d->comparison_func(item.key, key);
-        } else {
-            found = d->comparison_func(item.key, key);
-            if (!found && collisions > d->max_collisions) {
+        switch (is_match(d, key, inserting, index, collisions)) {
+            case MATCH:
+                return index;
+            case NO_MATCH:
                 return -1;
-            }
+            case TRY_AGAIN:
+                inc++;
+                collisions++;
+                index = (index + inc) % d->capacity;
         }
-        
-        if (found) {
-            if (inserting && collisions > d->max_collisions) {
-                d->max_collisions = collisions;
-            }
-            
-            return index;
-        }
-        
-        inc++;
-        collisions++;
-        index = (index + inc + d->capacity / 2) % d->capacity;
     }
 }
 

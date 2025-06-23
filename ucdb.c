@@ -19,7 +19,8 @@ static SCF_OPERATION(op);
 
 static int hashfunc(scf_datum d) {
     int ch = d.i_value;
-    return ch ^ (ch >> 16);
+    int result =  ch ^ (ch >> 16);
+    return result;
 }
 
 static scf_char_info *populate_char_data(void) {

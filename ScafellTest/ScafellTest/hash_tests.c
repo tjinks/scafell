@@ -50,6 +50,7 @@ BEGIN_TEST_GROUP(hash_tests)
     TEST(test_dictionary_remove)
     TEST(test_dictionary_remove_not_present)
     TEST(test_dictionary_get_items)
+    TEST(test_collisions)
 END_TEST_GROUP
 
 bool test_initial_size(void) {
@@ -85,7 +86,8 @@ bool test_add_existing(void) {
     scf_datum value = dt_int(99);
     scf_dictionary_add(&dict, key, value);
     scf_datum *retrieved = scf_dictionary_lookup(&dict, key);
-    return ASSERT_EQ(DT_INT, retrieved->type) && ASSERT_EQ(99, retrieved->i_value)
+    return ASSERT_FALSE(retrieved == NULL)
+        && ASSERT_EQ(DT_INT, retrieved->type) && ASSERT_EQ(99, retrieved->i_value)
         && ASSERT_EQ(13, dict.size);
 }
 
@@ -147,6 +149,19 @@ bool test_dictionary_get_items(void) {
     ASSERT_EQ(13, result.size);
     for (int i = 0; i < 13; i++) {
         if (!ASSERT_TRUE(contains_item(result, i, i * 2))) return false;
+    }
+    
+    return true;
+}
+
+static int identity_hash(scf_datum key) {
+    return 0;
+}
+
+bool test_collisions(void) {
+    dict = scf_dictionary_create(&op, identity_hash, cmp, 32);
+    for (int i = 0; i < 17; i++) {
+        scf_dictionary_add(&dict, dt_int(i), dt_int(i));
     }
     
     return true;

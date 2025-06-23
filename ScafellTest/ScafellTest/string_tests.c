@@ -23,9 +23,9 @@ void init_string_tests(void) {
 
 bool test_utf8_from_codepoint(void) {
     return ASSERT_EQ(65, utf8_from_codepoint(65))
-    && ASSERT_EQ(0xD1AD, utf8_from_codepoint(0x46D))
-    && ASSERT_EQ(0xE19AA0, utf8_from_codepoint(0x16A0))
-    && ASSERT_TRUE(0xF09F9888 == utf8_from_codepoint(0x1F608)) // ASSERT_EQ fails here due to signed/unsigned issues
+    && ASSERT_EQ(0xADD1, utf8_from_codepoint(0x46D))
+    && ASSERT_EQ(0xA09AE1, utf8_from_codepoint(0x16A0))
+    && ASSERT_TRUE(0x88989FF0 == utf8_from_codepoint(0x1F608)) // ASSERT_EQ fails here due to signed/unsigned issues
     ;
 }
 
@@ -47,13 +47,13 @@ bool test_char_info(void) {
     scf_char_info info1 = {65, 97, 65, 65, 65, -1, UC_LETTER | UC_UPPER};
     result &= check_info(info1);
     
-    scf_char_info info2 = {0xD09F, 0xD0BF, 0xD09F, 0xD09F, 0x41F, -1, UC_LETTER | UC_UPPER};
+    scf_char_info info2 = {0x9FD0, 0xBFD0, 0x9FD0, 0x9FD0, 0x41F, -1, UC_LETTER | UC_UPPER};
     result &= check_info(info2);
     
-    scf_char_info info3 = {0xD9A8, 0xD9A8, 0xD9A8, 0xD9A8, 0x668, 8, UC_DIGIT};
+    scf_char_info info3 = {0xA8D9, 0xA8D9, 0xA8D9, 0xA8D9, 0x668, 8, UC_DIGIT};
     result &= check_info(info3);
     
-    scf_char_info info4 = {0xF09FAC80, 0xF09FAC80, 0xF09FAC80, 0xF09FAC80, 0x1FB00, -1, UC_OTHER};
+    scf_char_info info4 = {0x80AC9FF0, 0x80AC9FF0, 0x80AC9FF0, 0x80AC9FF0, 0x1FB00, -1, UC_OTHER};
     result &= check_info(info4);
 
     return result;

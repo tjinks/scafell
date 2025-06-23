@@ -19,14 +19,14 @@ utf8_char utf8_from_codepoint(scf_codepoint cp) {
     if (cp <= 0x7FF) {
         int byte1 = 0x80 + (cp & 0x3F);
         int byte2 = 0xC0 + (cp >> 6);
-        return byte1 + (byte2 << 8);
+        return byte2 + (byte1 << 8);
     }
     
     if (cp <= 0xFFFF) {
         int byte1 = 0x80 + (cp & 0x3F);
         int byte2 = 0x80 + ((cp >> 6) & 0x3F);
         int byte3 = 0xE0 + (cp >> 12);
-        return byte1 + (byte2 << 8) + (byte3 << 16);
+        return byte3 + (byte2 << 8) + (byte1 << 16);
     }
     
     if (cp <= 0x10FFFF) {
@@ -34,7 +34,7 @@ utf8_char utf8_from_codepoint(scf_codepoint cp) {
         int byte2 = 0x80 + ((cp >> 6) & 0x3F);
         int byte3 = 0x80 + ((cp >> 12) & 0x3F);
         int byte4 = 0xF0 + (cp >> 18);
-        return byte1 + (byte2 << 8) + (byte3 << 16) + (byte4 << 24);
+        return byte4 + (byte3 << 8) + (byte2 << 16) + (byte1 << 24);
     }
     
     return SCF_INVALID_CODEPOINT;
