@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		EA19E4E82E0953AC0058746D /* libscafell.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EA19E4E72E0953AC0058746D /* libscafell.a */; };
+		EA19E4EA2E0953E70058746D /* libscuts.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EA19E4E92E0953C50058746D /* libscuts.a */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXCopyFilesBuildPhase section */
 		EA082FBC2E09510F00C0F207 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
@@ -20,12 +25,14 @@
 
 /* Begin PBXFileReference section */
 		EA082FBE2E09510F00C0F207 /* ScafellTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ScafellTest; sourceTree = BUILT_PRODUCTS_DIR; };
+		EA19E4E72E0953AC0058746D /* libscafell.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libscafell.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		EA19E4E92E0953C50058746D /* libscuts.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libscuts.a; path = ../../../../mylibs/scuts/libscuts.a; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		EA082FC02E09510F00C0F207 /* ScafellTest2 */ = {
+		EA082FC02E09510F00C0F207 /* ScafellTest */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = ScafellTest2;
+			path = ScafellTest;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -35,6 +42,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EA19E4EA2E0953E70058746D /* libscuts.a in Frameworks */,
+				EA19E4E82E0953AC0058746D /* libscafell.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -44,7 +53,8 @@
 		EA082FB52E09510F00C0F207 = {
 			isa = PBXGroup;
 			children = (
-				EA082FC02E09510F00C0F207 /* ScafellTest2 */,
+				EA082FC02E09510F00C0F207 /* ScafellTest */,
+				EA19E4E62E0953AC0058746D /* Frameworks */,
 				EA082FBF2E09510F00C0F207 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -55,6 +65,15 @@
 				EA082FBE2E09510F00C0F207 /* ScafellTest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		EA19E4E62E0953AC0058746D /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				EA19E4E92E0953C50058746D /* libscuts.a */,
+				EA19E4E72E0953AC0058746D /* libscafell.a */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -73,12 +92,12 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				EA082FC02E09510F00C0F207 /* ScafellTest2 */,
+				EA082FC02E09510F00C0F207 /* ScafellTest */,
 			);
 			name = ScafellTest;
 			packageProductDependencies = (
 			);
-			productName = ScafellTest2;
+			productName = ScafellTest;
 			productReference = EA082FBE2E09510F00C0F207 /* ScafellTest */;
 			productType = "com.apple.product-type.tool";
 		};
@@ -247,6 +266,11 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 4252B3HDL2;
 				ENABLE_HARDENED_RUNTIME = YES;
+				HEADER_SEARCH_PATHS = (
+					"${HOME}/Documents/mylibs/scuts",
+					"$(PROJECT_DIR)/..",
+				);
+				LIBRARY_SEARCH_PATHS = "${HOME}/Documents/mylibs/scuts";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -257,6 +281,11 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 4252B3HDL2;
 				ENABLE_HARDENED_RUNTIME = YES;
+				HEADER_SEARCH_PATHS = (
+					"${HOME}/Documents/mylibs/scuts",
+					"$(PROJECT_DIR)/..",
+				);
+				LIBRARY_SEARCH_PATHS = "${HOME}/Documents/mylibs/scuts";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

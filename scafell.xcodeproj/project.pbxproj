@@ -25,7 +25,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		EA082F942E01763B00C0F207 /* ScafellTest.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ScafellTest.xcodeproj; path = ../ScafellTest/ScafellTest.xcodeproj; sourceTree = SOURCE_ROOT; };
 		EA082FA72E06963600C0F207 /* str.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = str.h; sourceTree = "<group>"; };
 		EA082FA82E06963600C0F207 /* str.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = str.c; sourceTree = "<group>"; };
 		EA082FAD2E06C01A00C0F207 /* unicode_data.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = unicode_data.h; sourceTree = "<group>"; };
@@ -33,7 +32,7 @@
 		EA082FB02E06C0D600C0F207 /* ucdb.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = ucdb.c; sourceTree = "<group>"; };
 		EA082FB32E07E2CB00C0F207 /* ucbuilder.awk */ = {isa = PBXFileReference; lastKnownFileType = text; path = ucbuilder.awk; sourceTree = "<group>"; };
 		EA082FB42E07E31300C0F207 /* UnicodeData.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = UnicodeData.txt; sourceTree = "<group>"; };
-		EA082FC82E09510F00C0F207 /* ScafellTest.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ScafellTest.xcodeproj; path = ScafellTest2/ScafellTest.xcodeproj; sourceTree = "<group>"; };
+		EA082FC82E09510F00C0F207 /* ScafellTest.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ScafellTest.xcodeproj; path = ScafellTest/ScafellTest.xcodeproj; sourceTree = "<group>"; };
 		EA707A062E0006A20084BFDD /* libscafell.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libscafell.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		EA707A0D2E00077A0084BFDD /* datum.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = datum.h; sourceTree = "<group>"; };
 		EA707A0E2E00077A0084BFDD /* datum.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = datum.c; sourceTree = "<group>"; };
@@ -66,7 +65,7 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		EA082F972E01763B00C0F207 /* Products */ = {
+		EA19E4DE2E0952F90058746D /* Products */ = {
 			isa = PBXGroup;
 			children = (
 			);
@@ -82,7 +81,6 @@
 				EA082FAF2E06C0D600C0F207 /* ucdb.h */,
 				EA082FB02E06C0D600C0F207 /* ucdb.c */,
 				EA082FAD2E06C01A00C0F207 /* unicode_data.h */,
-				EA082F942E01763B00C0F207 /* ScafellTest.xcodeproj */,
 				EA082F752E00605D00C0F207 /* os */,
 				EA707A1D2E005DD00084BFDD /* err_handling.h */,
 				EA707A1E2E005DD00084BFDD /* err_handling.c */,
@@ -178,8 +176,8 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = EA082F972E01763B00C0F207 /* Products */;
-					ProjectRef = EA082F942E01763B00C0F207 /* ScafellTest.xcodeproj */;
+					ProductGroup = EA19E4DE2E0952F90058746D /* Products */;
+					ProjectRef = EA082FC82E09510F00C0F207 /* ScafellTest.xcodeproj */;
 				},
 			);
 			projectRoot = "";
