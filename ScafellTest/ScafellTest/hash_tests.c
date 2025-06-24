@@ -164,6 +164,6 @@ bool test_collisions(void) {
         scf_dictionary_add(&dict, dt_int(i), dt_int(i));
     }
     
-    return true;
+    return ASSERT_EQ(16, dict.max_collisions);
 }
 

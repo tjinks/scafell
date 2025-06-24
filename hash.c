@@ -19,11 +19,7 @@ static const double MIN_FREE_PERCENTAGE = 25;
 
 static int hash(scf_dictionary *d, scf_datum key) {
     int h = d->hash_func(key);
-    if (h < 0) {
-        h = ~h;
-    }
-    
-    return h % d->capacity;
+    return h & (d->capacity - 1);
 }
 
 typedef enum {
@@ -45,21 +41,39 @@ static match_status is_match(scf_dictionary *d, scf_datum key, bool inserting, i
     return found ? MATCH : TRY_AGAIN;
 }
 
-static int lookup(scf_dictionary *d, scf_datum key, bool inserting) {
-    int index = hash(d, key);
+static int next_inc(scf_dictionary *d, int collision_count) {
+    int mask = d->capacity - 1;
+    int factor = mask >> 1;
+    int n = (collision_count * factor) & mask;
+    int a = n;
+    int b = n + 1;
+    if ((a & 1) == 0) {
+        a = (a >> 1) & mask;
+        b &= mask;
+    } else {
+        a &= mask;
+        b = (b >> 1) & mask;
+    }
     
-    int inc = 0;
+    return (a * b) & mask;
+}
+
+static int lookup(scf_dictionary *d, scf_datum key, bool inserting) {
+    int original_index = hash(d, key);
+    
     int collisions = 0;
+    int current_index = original_index;
     for (;;) {
-        switch (is_match(d, key, inserting, index, collisions)) {
+        int inc;
+        switch (is_match(d, key, inserting, current_index, collisions)) {
             case MATCH:
-                return index;
+                return current_index;
             case NO_MATCH:
                 return -1;
             case TRY_AGAIN:
-                inc++;
                 collisions++;
-                index = (index + inc) % d->capacity;
+                inc = next_inc(d, collisions);
+                current_index = (original_index + inc) & (d->capacity - 1);
         }
     }
 }
