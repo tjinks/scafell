@@ -35,6 +35,7 @@ static match_status is_match(scf_dictionary *d, scf_datum key, bool inserting, i
     bool found = d->comparison_func(item.key, key);
     if (inserting) {
         found = found || item.key.type == DT_NONE;
+        if (found && collisions > d->max_collisions) d->max_collisions = collisions;
     } else {
         if (!found && collisions > d->max_collisions) {
             return NO_MATCH;
@@ -114,11 +115,14 @@ static int round_up(int n) {
     return result;
 }
 
+static const int MIN_CAPACITY = 16;
+
 scf_dictionary scf_dictionary_create(
                                      scf_operation *operation,
                                      scf_hash_func hash_func,
                                      scf_comparison_func comparison_func,
                                      int initial_capacity) {
+    if (initial_capacity < MIN_CAPACITY) initial_capacity = MIN_CAPACITY;
     initial_capacity = round_up(initial_capacity);
     scf_dictionary result;
     result.size = 0;

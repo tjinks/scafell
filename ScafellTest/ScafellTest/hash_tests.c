@@ -33,7 +33,7 @@ static bool cmp(scf_datum k1, scf_datum k2) {
 }
 
 void hash_tests_init(void) {
-    dict = scf_dictionary_create(&op, hash, cmp, 3);
+    dict = scf_dictionary_create(&op, hash, cmp, 13);
 }
 
 void hash_tests_cleanup(void *p) {
@@ -54,7 +54,7 @@ BEGIN_TEST_GROUP(hash_tests)
 END_TEST_GROUP
 
 bool test_initial_size(void) {
-    return ASSERT_EQ(4, dict.capacity);
+    return ASSERT_EQ(16, dict.capacity);
 }
 
 bool test_add_and_retrieve(void) {
