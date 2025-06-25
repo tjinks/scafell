@@ -13,20 +13,20 @@
 #include "mmgt.h"
 
 typedef struct {
-    int size;
-    int capacity;
+    size_t size;
+    size_t capacity;
     scf_datum *items;
 } scf_list;
 
-scf_list scf_list_create(scf_operation *operation, int initial_capacity);
+scf_list scf_list_create(scf_operation *operation, size_t initial_capacity);
 
 void scf_list_add(scf_list *list, scf_datum new_item);
 
 void scf_list_append(scf_list *list1, const scf_list *list2);
 
-void scf_list_insert(scf_list *list, scf_datum new_item, int before);
+void scf_list_insert(scf_list *list, scf_datum new_item, size_t before);
 
-void scf_list_remove(scf_list *list, int index);
+void scf_list_remove(scf_list *list, size_t index);
 
 void scf_push(scf_list *list, scf_datum item);
 

@@ -17,7 +17,7 @@ static const int UC_CHAR_COUNT = sizeof(uc_database) / sizeof(uc_database[0]);
 
 static SCF_OPERATION(op);
 
-static int hashfunc(scf_datum d) {
+static size_t hashfunc(scf_datum d) {
     int ch = d.i_value;
     int result =  ch ^ (ch >> 16);
     return result;

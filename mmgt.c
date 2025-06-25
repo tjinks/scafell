@@ -7,6 +7,8 @@
 
 #include <stdio.h>
 #include <stddef.h>
+#include <string.h>
+
 #include "mmgt.h"
 
 static const int HEADER_SIZE = offsetof(scf_mem_block, data);
@@ -98,3 +100,19 @@ void scf_complete(scf_operation *operation) {
 scf_operation *scf_get_operation(void *p) {
     return get_block(p)->operation;
 }
+
+scf_buffer scf_buffer_create(scf_operation *operation, int initial_capacity) {
+    scf_buffer result = {0, initial_capacity, scf_alloc(operation, initial_capacity)};
+    return result;
+}
+
+void scf_buffer_append_bytes(scf_buffer *buffer, const void *bytes, int count) {
+    if (buffer->size == buffer->capacity) {
+        buffer->data = scf_realloc(buffer->data, 2 * buffer->capacity);
+        buffer->capacity *= 2;
+    }
+    
+    memcpy(buffer->data + buffer->size, bytes, count);
+    buffer->size += count;
+}
+

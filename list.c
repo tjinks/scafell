@@ -9,12 +9,12 @@
 #include "list.h"
 #include "err_handling.h"
 
-static void ensure_capacity(scf_list *list, int minimum_capacity) {
+static void ensure_capacity(scf_list *list, size_t minimum_capacity) {
     if (list->capacity >= minimum_capacity) {
         return;
     }
     
-    int new_capacity = 2 * list->capacity;
+    size_t new_capacity = 2 * list->capacity;
     if (new_capacity < minimum_capacity) {
         new_capacity = minimum_capacity;
     }
@@ -23,7 +23,7 @@ static void ensure_capacity(scf_list *list, int minimum_capacity) {
     list->capacity = new_capacity;
 }
 
-scf_list scf_list_create(scf_operation *operation, int initial_capacity) {
+scf_list scf_list_create(scf_operation *operation, size_t initial_capacity) {
     scf_datum *items = scf_alloc(operation, SCF_DATUM_SIZE * initial_capacity);
     scf_list result = {0, initial_capacity, items};
     return result;
@@ -40,12 +40,12 @@ void scf_list_append(scf_list *list1, const scf_list *list2) {
     list1->size += list2->size;
 }
 
-void scf_list_insert(scf_list *list, scf_datum new_item, int before) {
+void scf_list_insert(scf_list *list, scf_datum new_item, size_t before) {
     if (before < 0 || before > list->size) {
         SCF_FATAL_ERROR("Invalid index");
     }
     
-    int items_to_shift = list->size - before;
+    size_t items_to_shift = list->size - before;
     if (items_to_shift == 0) {
         scf_list_add(list, new_item);
         return;
@@ -57,12 +57,12 @@ void scf_list_insert(scf_list *list, scf_datum new_item, int before) {
     list->size++;
 }
 
-void scf_list_remove(scf_list *list, int index) {
+void scf_list_remove(scf_list *list, size_t index) {
     if (index < 0 || index >= list->size) {
         SCF_FATAL_ERROR("Invalid index");
     }
     
-    int items_to_shift = (list->size - 1) - index;
+    size_t items_to_shift = (list->size - 1) - index;
     if (items_to_shift > 0) {
         memmove(&list->items[index], &list->items[index + 1], SCF_DATUM_SIZE * items_to_shift);
     }

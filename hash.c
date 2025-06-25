@@ -17,8 +17,8 @@
 
 static const double MIN_FREE_PERCENTAGE = 25;
 
-static int hash(scf_dictionary *d, scf_datum key) {
-    int h = d->hash_func(key);
+static size_t hash(scf_dictionary *d, scf_datum key) {
+    size_t h = d->hash_func(key);
     return h & (d->capacity - 1);
 }
 
@@ -26,7 +26,7 @@ typedef enum {
     MATCH, NO_MATCH, TRY_AGAIN
 } match_status;
 
-static match_status is_match(scf_dictionary *d, scf_datum key, bool inserting, int index, int collisions) {
+static match_status is_match(scf_dictionary *d, scf_datum key, bool inserting, size_t index, int collisions) {
     scf_dictionary_item item = d->items[index];
     bool found = d->comparison_func(item.key, key);
     if (inserting) {
@@ -41,12 +41,12 @@ static match_status is_match(scf_dictionary *d, scf_datum key, bool inserting, i
     return found ? MATCH : TRY_AGAIN;
 }
 
-static int next_inc(scf_dictionary *d, int collision_count) {
-    int mask = d->capacity - 1;
-    int factor = mask >> 1;
-    int n = (collision_count * factor) & mask;
-    int a = n;
-    int b = n + 1;
+static size_t next_inc(scf_dictionary *d, int collision_count) {
+    size_t mask = d->capacity - 1;
+    size_t factor = mask >> 1;
+    size_t n = (collision_count * factor) & mask;
+    size_t a = n;
+    size_t b = n + 1;
     if ((a & 1) == 0) {
         a = (a >> 1) & mask;
         b &= mask;
@@ -58,13 +58,13 @@ static int next_inc(scf_dictionary *d, int collision_count) {
     return (a * b) & mask;
 }
 
-static int lookup(scf_dictionary *d, scf_datum key, bool inserting) {
-    int original_index = hash(d, key);
+static size_t lookup(scf_dictionary *d, scf_datum key, bool inserting) {
+    size_t original_index = hash(d, key);
     
     int collisions = 0;
-    int current_index = original_index;
+    size_t current_index = original_index;
     for (;;) {
-        int inc;
+        size_t inc;
         switch (is_match(d, key, inserting, current_index, collisions)) {
             case MATCH:
                 return current_index;
@@ -90,9 +90,9 @@ static scf_dictionary_item *copy_items(scf_operation *operation, const scf_dicti
     return result;
 }
 
-static void rehash(scf_dictionary *d, int capacity) {
+static void rehash(scf_dictionary *d, size_t capacity) {
     SCF_OPERATION(rehashing);
-    int size = d->size;
+    size_t size = d->size;
     scf_dictionary_item *copy = copy_items(&rehashing, d);
     
     d->items = scf_realloc(d->items, ITEM_SIZE * capacity);
@@ -101,7 +101,7 @@ static void rehash(scf_dictionary *d, int capacity) {
     d->max_collisions = 0;
 
     for (int i = 0; i < size; i++) {
-        int index = lookup(d, copy[i].key, true);
+        size_t index = lookup(d, copy[i].key, true);
         d->items[index].key = copy[i].key;
         d->items[index].value = copy[i].value;
     }
@@ -120,7 +120,7 @@ static void ensure_capacity(scf_dictionary *d) {
 /*
  * Find the smallest power of 2 > n.
  */
-static int round_up(int n) {
+static size_t round_up(size_t n) {
     int result = 2;
     while (result < n) {
         result *= 2;
@@ -135,7 +135,7 @@ scf_dictionary scf_dictionary_create(
                                      scf_operation *operation,
                                      scf_hash_func hash_func,
                                      scf_comparison_func comparison_func,
-                                     int initial_capacity) {
+                                     size_t initial_capacity) {
     if (initial_capacity < MIN_CAPACITY) initial_capacity = MIN_CAPACITY;
     initial_capacity = round_up(initial_capacity);
     scf_dictionary result;
@@ -151,7 +151,7 @@ scf_dictionary scf_dictionary_create(
 
 scf_datum scf_dictionary_add(scf_dictionary *d, scf_datum key, scf_datum value) {
     ensure_capacity(d);
-    int index = lookup(d, key, true);
+    size_t index = lookup(d, key, true);
     scf_dictionary_item *item = d->items + index;
     if (item->key.type == DT_NONE) {
         d->size++;
@@ -165,7 +165,7 @@ scf_datum scf_dictionary_add(scf_dictionary *d, scf_datum key, scf_datum value) 
 }
 
 scf_datum scf_dictionary_remove(scf_dictionary *d, scf_datum key) {
-    int index = lookup(d, key, false);
+    size_t index = lookup(d, key, false);
     if (index == -1) {
         return dt_none();
     }
@@ -179,7 +179,7 @@ scf_datum scf_dictionary_remove(scf_dictionary *d, scf_datum key) {
 }
 
 scf_datum *scf_dictionary_lookup(const scf_dictionary *d, scf_datum key) {
-    int index = lookup((scf_dictionary *)d, key, false);
+    size_t index = lookup((scf_dictionary *)d, key, false);
     if (index == -1) {
         return NULL;
     } else {
@@ -198,7 +198,7 @@ scf_list scf_dictionary_get_items(scf_operation *operation, const scf_dictionary
     return result;
 }
 
-scf_set scf_set_create(scf_operation *operation, scf_hash_func hash_func, scf_comparison_func comparison_func, int initial_capacity) {
+scf_set scf_set_create(scf_operation *operation, scf_hash_func hash_func, scf_comparison_func comparison_func, size_t initial_capacity) {
     scf_set result;
     result.dictionary = scf_dictionary_create(operation, hash_func, comparison_func, initial_capacity);
     return result;

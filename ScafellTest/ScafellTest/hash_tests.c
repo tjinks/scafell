@@ -20,7 +20,7 @@
 static SCF_OPERATION(op);
 static scf_dictionary dict;
 
-static int hash(scf_datum key) {
+static size_t hash(scf_datum key) {
     return key.i_value % 4;
 }
 
@@ -154,7 +154,7 @@ bool test_dictionary_get_items(void) {
     return true;
 }
 
-static int identity_hash(scf_datum key) {
+static size_t identity_hash(scf_datum key) {
     return 0;
 }
 
