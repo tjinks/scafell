@@ -11,7 +11,7 @@
 #include "datum.h"
 
 static scf_list list;
-SCF_OPERATION(op);
+static SCF_OPERATION(op);
 
 BEGIN_TEST_GROUP(list_tests)
     INIT(list_init)

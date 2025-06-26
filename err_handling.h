@@ -31,8 +31,6 @@ typedef void (*scf_err_handler)(void);
 
 void scf_set_err_handler(scf_err_handler handler);
 
-void scf_fatal_error(const char *filename, int line_number, const char *msg);
-
-#define SCF_FATAL_ERROR(msg) scf_fatal_error(__FILE__, __LINE__, (msg))
+void scf_fatal_error(const char *msg);
 
 #endif /* err_handling_h */

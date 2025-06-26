@@ -10,8 +10,10 @@
 #include <string.h>
 
 #include "mmgt.h"
+#include "err_handling.h"
 
 static const int HEADER_SIZE = offsetof(scf_mem_block, data);
+static const int MIN_CAPACITY = 4;
 
 static void default_exhaustion_handler(void) {
     fprintf(stderr, "Out of memory!\n");
@@ -30,8 +32,8 @@ static void *alloc_raw(void *original, size_t required) {
     abort();
 }
 
-static scf_mem_block *get_block(void *p) {
-    char *cp = p;
+static scf_mem_block *get_block(const void *p) {
+    char *cp = (char *)p;
     cp -= HEADER_SIZE;
     return (scf_mem_block *) cp;
 }
@@ -39,6 +41,7 @@ static scf_mem_block *get_block(void *p) {
 static void add_block(scf_operation *operation, scf_mem_block *block) {
     block->operation = operation;
     block->next = operation->first;
+    block->cleanup = NULL;
     operation->first = block;
 }
 
@@ -97,22 +100,63 @@ void scf_complete(scf_operation *operation) {
     operation->first = NULL;
 }
 
-scf_operation *scf_get_operation(void *p) {
+scf_operation *scf_get_operation(const void *p) {
     return get_block(p)->operation;
 }
 
-scf_buffer scf_buffer_create(scf_operation *operation, int initial_capacity) {
+static void ensure_capacity(scf_buffer *buffer, size_t required) {
+    if (buffer->capacity < required) {
+        size_t new_capacity = 2 * buffer->capacity;
+        if (new_capacity < required) new_capacity = required;
+        buffer->data = scf_realloc(buffer->data, new_capacity);
+        buffer->capacity = new_capacity;
+    }
+}
+
+scf_buffer scf_buffer_create(scf_operation *operation, size_t initial_capacity) {
+    if (initial_capacity < MIN_CAPACITY) initial_capacity = MIN_CAPACITY;
     scf_buffer result = {0, initial_capacity, scf_alloc(operation, initial_capacity)};
     return result;
 }
 
-void scf_buffer_append_bytes(scf_buffer *buffer, const void *bytes, int count) {
-    if (buffer->size == buffer->capacity) {
-        buffer->data = scf_realloc(buffer->data, 2 * buffer->capacity);
-        buffer->capacity *= 2;
-    }
-    
-    memcpy(buffer->data + buffer->size, bytes, count);
-    buffer->size += count;
+void scf_buffer_append_bytes(scf_buffer *buffer, const void *bytes_to_append, size_t byte_count) {
+    ensure_capacity(buffer, buffer->size + byte_count);
+    memcpy(buffer->data + buffer->size, bytes_to_append, byte_count);
+    buffer->size += byte_count;
 }
+
+void scf_buffer_insert_bytes(scf_buffer *buffer, const void *bytes_to_insert, size_t before, size_t byte_count) {
+    if (before > buffer->size) scf_fatal_error("Invalid index");
+
+    if (byte_count == 0) return;
+    
+    ensure_capacity(buffer, buffer->size + byte_count);
+    memmove(buffer->data + before + byte_count, buffer->data + before, buffer->size - before);
+    memcpy(buffer->data + before, bytes_to_insert, byte_count);
+    buffer->size += byte_count;
+}
+
+void scf_buffer_remove(scf_buffer *buffer, size_t starting_from, size_t byte_count) {
+    if (starting_from + byte_count > buffer->size) scf_fatal_error("Attempting to remove more data than is present!");
+
+    if (byte_count == 0) return;
+    
+    memmove(buffer->data + starting_from, buffer->data + starting_from + byte_count, buffer->size - (starting_from + byte_count));
+    buffer->size -= byte_count;
+}
+
+scf_buffer scf_buffer_extract(const scf_buffer *buffer, size_t starting_from, size_t byte_count) {
+    if (starting_from + byte_count > buffer->size) scf_fatal_error("Attempting to extract more data than is present!");
+
+    scf_buffer result = scf_buffer_create(scf_get_operation(buffer->data), byte_count);
+    memcpy(result.data, buffer->data + starting_from, byte_count);
+    result.size = byte_count;
+    return result;
+}
+
+extern void scf_buffer_append(scf_buffer *buf1, const scf_buffer *buf2);
+
+extern void scf_buffer_insert(scf_buffer *buf1, scf_buffer *buf2, size_t before);
+
+
 

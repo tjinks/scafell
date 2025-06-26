@@ -42,7 +42,7 @@ void scf_list_append(scf_list *list1, const scf_list *list2) {
 
 void scf_list_insert(scf_list *list, scf_datum new_item, size_t before) {
     if (before < 0 || before > list->size) {
-        SCF_FATAL_ERROR("Invalid index");
+        scf_fatal_error("Invalid index");
     }
     
     size_t items_to_shift = list->size - before;
@@ -59,7 +59,7 @@ void scf_list_insert(scf_list *list, scf_datum new_item, size_t before) {
 
 void scf_list_remove(scf_list *list, size_t index) {
     if (index < 0 || index >= list->size) {
-        SCF_FATAL_ERROR("Invalid index");
+        scf_fatal_error("Invalid index");
     }
     
     size_t items_to_shift = (list->size - 1) - index;

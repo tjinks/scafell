@@ -71,3 +71,4 @@ bool test_realloc(void) {
     && ASSERT_EQ(1, alloc2_cleanup_count)
     && ASSERT_EQ(1, alloc3_cleanup_count);
 }
+

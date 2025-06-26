@@ -10,7 +10,7 @@
 
 #include "err_handling.h"
 
-void scf_fatal_error(const char *filename, int line_number, const char *msg) {
-    fprintf(stderr, "%s: Line %d - %s\n", filename, line_number, msg);
+void scf_fatal_error(const char *msg) {
+    fprintf(stderr, "%s\n", msg);
     exit(1);
 }

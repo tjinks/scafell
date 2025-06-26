@@ -13,5 +13,6 @@ int main(int argc, const char * argv[]) {
     RUN_TEST_GROUP(list_tests)
     RUN_TEST_GROUP(hash_tests)
     RUN_TEST_GROUP(string_tests)
+    RUN_TEST_GROUP(buffer_tests)
     return 0;
 }
