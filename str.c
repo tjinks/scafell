@@ -81,6 +81,47 @@ scf_string scf_string_from_bytes(scf_operation *op, const void *p, size_t byte_c
     return result;
 }
 
+void scf_string_append(scf_string *s1, const scf_string *s2) {
+    scf_buffer_append(&s1->chars, &s2->chars);
+    if (s1->char_count != -1) {
+        if (s2->char_count == -1) {
+            s1->char_count = -1;
+        } else {
+            s1->char_count += s2->char_count;
+        }
+    }
+}
+
+utf8_char utf8_next(utf8_iterator *iter) {
+    if (iter->byte_index >= scf_string_byte_count(iter->s)) {
+        return UTF8_INVALID;
+    }
+    
+    unsigned char *current_char = iter->s->chars.data + iter->byte_index;
+    utf8_char result = 0;
+    size_t byte_count = get_utf8_byte_count(current_char[0]);
+    switch (byte_count) {
+        case 1:
+            result = current_char[0];
+            break;
+        case 2:
+            result = current_char[1] + (current_char[0] << 8);
+            break;
+        case 3:
+            result = current_char[2] + (current_char[1] << 8) + (current_char[0] << 16);
+            break;
+        case 4:
+            result = current_char[3] + (current_char[2] << 8) + (current_char[1] << 16) + (current_char[0] << 24);
+            break;
+        default:
+            return UTF8_INVALID;
+    }
+    
+    iter->byte_index += byte_count;
+    iter->char_index++;
+    return result;
+}
+
 
 
 // extern defs for inline functions

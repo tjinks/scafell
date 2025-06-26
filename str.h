@@ -9,10 +9,11 @@
 #define utf8_h
 
 #include <string.h>
+#include <stdint.h>
 #include "os/osdefs.h"
 #include "mmgt.h"
 
-typedef int utf8_char;
+typedef int32_t utf8_char;
 
 typedef struct {
     size_t char_count;
@@ -30,6 +31,10 @@ extern const utf8_char UTF8_INVALID;
 utf8_char utf8_from_codepoint(scf_codepoint cp);
 
 scf_string scf_string_from_bytes(scf_operation *op, const void *p, size_t byte_count);
+
+void scf_string_append(scf_string *s1, const scf_string *s2);
+
+utf8_char utf8_next(utf8_iterator *iter);
 
 inline scf_string scf_string_from_cstr(scf_operation *op, const char *cstr) {
     return scf_string_from_bytes(op, cstr, strlen(cstr));
