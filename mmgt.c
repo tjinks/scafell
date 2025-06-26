@@ -41,7 +41,6 @@ static scf_mem_block *get_block(const void *p) {
 static void add_block(scf_operation *operation, scf_mem_block *block) {
     block->operation = operation;
     block->next = operation->first;
-    block->cleanup = NULL;
     operation->first = block;
 }
 
@@ -61,16 +60,15 @@ static void remove_block(scf_mem_block *block) {
 }
 
 void *scf_alloc(scf_operation *operation, size_t required) {
-    required += HEADER_SIZE;
-    scf_mem_block *block = alloc_raw(NULL, required);
-    add_block(operation, block);
-    return block->data;
+    return scf_alloc_with_cleanup(operation, NULL, required);
 }
 
 void *scf_alloc_with_cleanup(scf_operation *operation, scf_cleanup_func cleanup, size_t required) {
-    void *result = scf_alloc(operation, required);
-    get_block(result)->cleanup = cleanup;
-    return result;
+    required += HEADER_SIZE;
+    scf_mem_block *block = alloc_raw(NULL, required);
+    block->cleanup = cleanup;
+    add_block(operation, block);
+    return block->data;
 }
 
 void *scf_realloc(void *p, size_t required) {

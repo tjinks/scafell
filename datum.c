@@ -25,7 +25,7 @@ scf_datum dt_false(void) {
     return _false;
 }
 
-scf_datum dt_int(int i) {
+scf_datum dt_int(int64_t i) {
     scf_datum result = {DT_INT, .i_value = i};
     return result;
 }

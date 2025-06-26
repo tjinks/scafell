@@ -9,6 +9,7 @@
 #define datum_h
 
 #include <stdbool.h>
+#include <stdint.h>
 
 typedef enum {
     DT_NONE = 0
@@ -25,14 +26,15 @@ typedef struct scf_datum {
     scf_datum_type type;
     union {
         char c_value;
-        int i_value;
+        int64_t i_value;
+        uint64_t u_value;
         void *p_value;
         bool b_value;
     };
 } scf_datum;
 
 scf_datum dt_none(void);
-scf_datum dt_int(int i);
+scf_datum dt_int(int64_t i);
 scf_datum dt_ptr(void *p);
 scf_datum dt_true(void);
 scf_datum dt_false(void);

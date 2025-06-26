@@ -10,15 +10,24 @@
 #include "str.h"
 #include "ucdb.h"
 
+static SCF_OPERATION(op);
+
 BEGIN_TEST_GROUP(string_tests)
     INIT(init_string_tests)
+    CLEANUP(cleanup_string_tests)
     TEST(test_utf8_from_codepoint)
     TEST(test_char_info)
     TEST(test_invalid_char_info)
+    TEST(test_string_from_cstr_valid)
+    TEST(test_string_from_cstr_invalid)
 END_TEST_GROUP
 
 void init_string_tests(void) {
     scf_ucdb_init();
+}
+
+void cleanup_string_tests(void) {
+    scf_complete(&op);
 }
 
 bool test_utf8_from_codepoint(void) {
@@ -55,11 +64,28 @@ bool test_char_info(void) {
     
     scf_char_info info4 = {0x80AC9FF0, 0x80AC9FF0, 0x80AC9FF0, 0x80AC9FF0, 0x1FB00, -1, UC_OTHER};
     result &= check_info(info4);
-
     return result;
 }
 
 bool test_invalid_char_info(void) {
     scf_char_info info = scf_get_char_info(0xF09FAB97);
-    return ASSERT_EQ(SCF_INVALID_CODEPOINT, info.base) && ASSERT_EQ(UC_NONE, info.category);
+    return ASSERT_EQ(UTF8_INVALID, info.base) && ASSERT_EQ(UC_NONE, info.category);
+}
+
+bool test_string_from_cstr_valid(void) {
+    const char *cstr = "£xyz♚";
+    scf_string s = scf_string_from_cstr(&op, cstr);
+    bool result = true;
+    result &= ASSERT_EQ(5, s.char_count);
+    result &= ASSERT_EQ(8, scf_string_byte_count(&s));
+    return result;
+}
+
+bool test_string_from_cstr_invalid(void) {
+    const char cstr[] = {'a', 0xe2, 0x99, 0x0};
+    scf_string s = scf_string_from_cstr(&op, cstr);
+    bool result = true;
+    result &= ASSERT_EQ(-1, s.char_count);
+    result &= ASSERT_EQ(3, scf_string_byte_count(&s));
+    return result;
 }

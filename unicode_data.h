@@ -2,7 +2,7 @@
 
 #include "ucdb.h"
 
-static struct {
+static const struct {
     int codepoint;
     scf_char_category category;
     int digit_value;

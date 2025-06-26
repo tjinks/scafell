@@ -45,8 +45,6 @@ BEGIN_TEST_GROUP(mmgt_tests)
     TEST(test_realloc)
 END_TEST_GROUP
 
-
-
 bool test_alloc_and_free(void) {
     SCF_OPERATION(op);
     alloc1 = scf_alloc_with_cleanup(&op, cleanup, 10);

@@ -18,7 +18,7 @@ static const int UC_CHAR_COUNT = sizeof(uc_database) / sizeof(uc_database[0]);
 static SCF_OPERATION(op);
 
 static size_t hashfunc(scf_datum d) {
-    int ch = d.i_value;
+    int ch = (int) d.i_value;
     int result =  ch ^ (ch >> 16);
     return result;
 }
@@ -59,7 +59,7 @@ const scf_char_info scf_get_char_info(utf8_char ch) {
     if (value) {
         result = *((scf_char_info *)value->p_value);
     } else {
-        result.base = SCF_INVALID_CODEPOINT;
+        result.base = UTF8_INVALID;
         result.lower = result.base;
         result.upper = result.base;
         result.title = result.base;
