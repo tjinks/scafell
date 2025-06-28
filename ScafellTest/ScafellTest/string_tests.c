@@ -20,6 +20,8 @@ BEGIN_TEST_GROUP(string_tests)
     TEST(test_invalid_char_info)
     TEST(test_string_from_cstr_valid)
     TEST(test_string_from_cstr_invalid)
+    TEST(test_utf8_next)
+    TEST(test_scf_substring)
 END_TEST_GROUP
 
 void init_string_tests(void) {
@@ -28,6 +30,40 @@ void init_string_tests(void) {
 
 void cleanup_string_tests(void) {
     scf_complete(&op);
+    scf_ucdb_close();
+}
+
+bool test_scf_substring(void) {
+    bool result = true;
+    return result;
+}
+
+bool test_utf8_next(void) {
+    scf_string s = scf_string_from_cstr(&op, "A£B");
+    utf8_iterator iter = scf_string_iterator(&s);
+    bool result = true;
+    utf8_char ch;
+    scf_char_info info;
+    
+    result &= ASSERT_EQ(0, iter.char_index);
+    ch = utf8_current(&iter);
+    ASSERT_TRUE(utf8_next(&iter));
+    info = scf_get_char_info(ch);
+    result &= ASSERT_EQ(65, info.codepoint);
+    
+    result &= ASSERT_EQ(1, iter.char_index);
+    ch = utf8_current(&iter);
+    ASSERT_TRUE(utf8_next(&iter));
+    info = scf_get_char_info(ch);
+    result &= ASSERT_EQ(0xA3, info.codepoint);
+    
+    result &= ASSERT_EQ(2, iter.char_index);
+    ch = utf8_current(&iter);
+    ASSERT_FALSE(utf8_next(&iter));
+    info = scf_get_char_info(ch);
+    result &= ASSERT_EQ(66, info.codepoint);
+    
+    return result;
 }
 
 bool test_utf8_from_codepoint(void) {
@@ -76,6 +112,7 @@ bool test_string_from_cstr_valid(void) {
     const char *cstr = "£xyz♚";
     scf_string s = scf_string_from_cstr(&op, cstr);
     bool result = true;
+    result &= ASSERT_TRUE(s.is_utf8);
     result &= ASSERT_EQ(5, s.char_count);
     result &= ASSERT_EQ(8, scf_string_byte_count(&s));
     return result;
@@ -85,7 +122,7 @@ bool test_string_from_cstr_invalid(void) {
     const char cstr[] = {'a', 0xe2, 0x99, 0x0};
     scf_string s = scf_string_from_cstr(&op, cstr);
     bool result = true;
-    result &= ASSERT_EQ(-1, s.char_count);
+    result &= ASSERT_FALSE(s.is_utf8);
     result &= ASSERT_EQ(3, scf_string_byte_count(&s));
     return result;
 }

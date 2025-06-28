@@ -495,8 +495,8 @@
             filePath = "ScafellTest/ScafellTest/string_tests.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "79"
-            endingLineNumber = "79"
+            startingLineNumber = "116"
+            endingLineNumber = "116"
             landmarkName = "test_string_from_cstr_valid()"
             landmarkType = "9">
          </BreakpointContent>
@@ -511,8 +511,8 @@
             filePath = "ScafellTest/ScafellTest/string_tests.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "89"
-            endingLineNumber = "89"
+            startingLineNumber = "126"
+            endingLineNumber = "126"
             landmarkName = "test_string_from_cstr_invalid()"
             landmarkType = "9">
          </BreakpointContent>
@@ -562,6 +562,38 @@
             startingLineNumber = "64"
             endingLineNumber = "64"
             landmarkName = "test_realloc()"
+            landmarkType = "9">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "D54E7F6B-C204-47B0-B9FC-C2DB6C95F160"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ScafellTest/ScafellTest/string_tests.c"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "113"
+            endingLineNumber = "113"
+            landmarkName = "test_string_from_cstr_valid()"
+            landmarkType = "9">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "266F927C-BF19-4329-A3F4-EEB7C586CE30"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ScafellTest/ScafellTest/string_tests.c"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "62"
+            endingLineNumber = "62"
+            landmarkName = "test_utf8_next()"
             landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>

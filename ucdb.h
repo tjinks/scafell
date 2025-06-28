@@ -24,6 +24,7 @@ typedef struct {
 } scf_char_info;
 
 void scf_ucdb_init(void);
+void scf_ucdb_close(void);
 
 const scf_char_info scf_get_char_info(utf8_char ch);
 

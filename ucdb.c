@@ -53,6 +53,10 @@ void scf_ucdb_init(void) {
     hash_char_data(char_data);
 }
 
+void scf_ucdb_close(void) {
+    scf_complete(&op);
+}
+
 const scf_char_info scf_get_char_info(utf8_char ch) {
     scf_char_info result;
     const scf_datum *value = scf_dictionary_lookup(&ucdb, dt_int(ch));
