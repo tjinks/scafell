@@ -44,13 +44,13 @@ void scf_string_append_char(scf_string *s, utf8_char c);
 
 char *scf_string_to_cstr(const scf_string *s);
 
-scf_string scf_substring(const scf_string *s, size_t start, size_t length);
+scf_string scf_substring(const utf8_iterator iter, size_t length);
 
 bool utf8_next(utf8_iterator *iter);
 
-bool utf8_back(utf8_iterator *iter);
+bool utf8_prev(utf8_iterator *iter);
 
-utf8_char utf8_current(utf8_iterator *iter);
+utf8_char utf8_current(utf8_iterator iter);
 
 inline scf_string scf_string_from_cstr(scf_operation *op, const char *cstr) {
     return scf_string_from_bytes(op, cstr, strlen(cstr));
@@ -60,10 +60,18 @@ inline size_t scf_string_byte_count(const scf_string *s) {
     return s->chars.size;
 }
 
+utf8_iterator utf8_iterator_at(const scf_string *s, int char_index);
+
+inline bool utf8_is_at_end(utf8_iterator iter) {
+    return iter.char_index == iter.s->char_count;
+}
+
+inline bool utf8_is_at_start(utf8_iterator iter) {
+    return iter.char_index == 0;
+}
+
 inline utf8_iterator scf_string_iterator(const scf_string *s) {
-    if (!s->is_utf8) scf_raise_error(SCF_INVALID_UTF8_OPERATION, "Attempt to create UTF8 iterator for non-UTF8 string");
-    utf8_iterator result = {s, s->char_count == -1 ? scf_string_byte_count(s) : 0, 0};
-    return result;
+    return utf8_iterator_at(s, 0);
 }
 
 #endif /* utf8_h */

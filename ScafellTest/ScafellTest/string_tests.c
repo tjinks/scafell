@@ -20,8 +20,10 @@ BEGIN_TEST_GROUP(string_tests)
     TEST(test_invalid_char_info)
     TEST(test_string_from_cstr_valid)
     TEST(test_string_from_cstr_invalid)
-    TEST(test_utf8_next)
+    TEST(test_utf8_current_and_next)
+    TEST(test_utf8_prev)
     TEST(test_scf_substring)
+    TEST(test_utf8_iterator_at)
 END_TEST_GROUP
 
 void init_string_tests(void) {
@@ -35,10 +37,45 @@ void cleanup_string_tests(void) {
 
 bool test_scf_substring(void) {
     bool result = true;
+    scf_string s = scf_string_from_cstr(&op, "A£B€");
+    utf8_iterator iter = utf8_iterator_at(&s, 1);
+    scf_string ss = scf_substring(iter, 2);
+    result &= ASSERT_EQ(2, ss.char_count);
+    utf8_iterator ss_iter = scf_string_iterator(&ss);
+    result &= ASSERT_EQ(0xa3c2, utf8_current(ss_iter));
+    result &= ASSERT_TRUE(utf8_next(&ss_iter));
+    result &= ASSERT_EQ(66, utf8_current(ss_iter));
+    
     return result;
 }
 
-bool test_utf8_next(void) {
+bool test_utf8_iterator_at(void) {
+    scf_string s = scf_string_from_cstr(&op, "A£B");
+    utf8_iterator iter = utf8_iterator_at(&s, 2);
+    utf8_char ch = utf8_current(iter);
+    bool result = ASSERT_EQ(66, ch);
+    result &= iter.char_index == 2;
+    
+    iter = utf8_iterator_at(&s, 999);
+    result &= ASSERT_TRUE(utf8_is_at_end(iter));
+    
+    return result;
+}
+
+bool test_utf8_prev(void) {
+    scf_string s = scf_string_from_cstr(&op, "A£B");
+    bool result = true;
+    utf8_iterator iter = scf_string_iterator(&s);
+    result &= ASSERT_TRUE(utf8_next(&iter));
+    result &= ASSERT_TRUE(utf8_prev(&iter));
+    utf8_char ch = utf8_current(iter);
+    scf_char_info info = scf_get_char_info(ch);
+    result &= ASSERT_EQ(65, info.codepoint);
+    result &= ASSERT_FALSE(utf8_prev(&iter));
+    return result;
+}
+
+bool test_utf8_current_and_next(void) {
     scf_string s = scf_string_from_cstr(&op, "A£B");
     utf8_iterator iter = scf_string_iterator(&s);
     bool result = true;
@@ -46,22 +83,24 @@ bool test_utf8_next(void) {
     scf_char_info info;
     
     result &= ASSERT_EQ(0, iter.char_index);
-    ch = utf8_current(&iter);
-    ASSERT_TRUE(utf8_next(&iter));
+    ch = utf8_current(iter);
+    result &= ASSERT_TRUE(utf8_next(&iter));
     info = scf_get_char_info(ch);
     result &= ASSERT_EQ(65, info.codepoint);
     
     result &= ASSERT_EQ(1, iter.char_index);
-    ch = utf8_current(&iter);
-    ASSERT_TRUE(utf8_next(&iter));
+    ch = utf8_current(iter);
+    result &= ASSERT_TRUE(utf8_next(&iter));
     info = scf_get_char_info(ch);
     result &= ASSERT_EQ(0xA3, info.codepoint);
     
     result &= ASSERT_EQ(2, iter.char_index);
-    ch = utf8_current(&iter);
-    ASSERT_FALSE(utf8_next(&iter));
+    ch = utf8_current(iter);
+    result &= ASSERT_FALSE(utf8_next(&iter));
     info = scf_get_char_info(ch);
     result &= ASSERT_EQ(66, info.codepoint);
+    
+    result &= (ASSERT_TRUE(utf8_is_at_end(iter)));
     
     return result;
 }
