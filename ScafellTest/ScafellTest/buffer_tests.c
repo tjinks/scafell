@@ -6,9 +6,9 @@
 //
 
 #include <stdio.h>
-#include <scuts.h>
 #include <string.h>
 #include "mmgt.h"
+#include "scuts.h"
 
 static SCF_OPERATION(op);
 

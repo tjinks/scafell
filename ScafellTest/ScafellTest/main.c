@@ -6,7 +6,7 @@
 //
 
 #include <stdio.h>
-#include <scuts.h>
+#include "scuts.h"
 
 int main(int argc, const char * argv[]) {
     RUN_TEST_GROUP(mmgt_tests)

@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		EA19E4E82E0953AC0058746D /* libscafell.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EA19E4E72E0953AC0058746D /* libscafell.a */; };
-		EA19E4EA2E0953E70058746D /* libscuts.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EA19E4E92E0953C50058746D /* libscuts.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -42,7 +41,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EA19E4EA2E0953E70058746D /* libscuts.a in Frameworks */,
 				EA19E4E82E0953AC0058746D /* libscafell.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -266,11 +264,8 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 4252B3HDL2;
 				ENABLE_HARDENED_RUNTIME = YES;
-				HEADER_SEARCH_PATHS = (
-					"${HOME}/Documents/mylibs/scuts",
-					"$(PROJECT_DIR)/..",
-				);
-				LIBRARY_SEARCH_PATHS = "${HOME}/Documents/mylibs/scuts";
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../scafell";
+				LIBRARY_SEARCH_PATHS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -281,11 +276,8 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 4252B3HDL2;
 				ENABLE_HARDENED_RUNTIME = YES;
-				HEADER_SEARCH_PATHS = (
-					"${HOME}/Documents/mylibs/scuts",
-					"$(PROJECT_DIR)/..",
-				);
-				LIBRARY_SEARCH_PATHS = "${HOME}/Documents/mylibs/scuts";
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../scafell";
+				LIBRARY_SEARCH_PATHS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

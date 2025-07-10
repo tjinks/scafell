@@ -14,7 +14,7 @@
 //
 
 #include <stdio.h>
-#include <scuts.h>
+#include "scuts.h"
 #include "hash.h"
 
 static SCF_OPERATION(op);

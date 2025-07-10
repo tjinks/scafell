@@ -6,7 +6,7 @@
 //
 
 #include <stdio.h>
-#include <scuts.h>
+#include "scuts.h"
 #include "str.h"
 #include "ucdb.h"
 

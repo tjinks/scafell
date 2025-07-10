@@ -6,7 +6,7 @@
 //
 
 #include <stdio.h>
-#include <scuts.h>
+#include "scuts.h"
 #include "list.h"
 #include "datum.h"
 

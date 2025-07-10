@@ -160,7 +160,7 @@ void scf_string_append_char(scf_string *s, utf8_char c) {
 }
 
 char *scf_string_to_cstr(const scf_string *s) {
-    char *result = scf_alloc(scf_get_operation(s), s->chars.size + 1);
+    char *result = scf_alloc(scf_get_operation(s->chars.data), s->chars.size + 1);
     memcpy(result, s->chars.data, s->chars.size);
     result[s->chars.size] = 0;
     return result;
