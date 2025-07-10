@@ -21,7 +21,6 @@ typedef enum {
 
 typedef struct scf_datum scf_datum;
 
-
 typedef struct scf_datum {
     scf_datum_type type;
     union {
