@@ -36,22 +36,9 @@ void hash_tests_init(void) {
     dict = scf_dictionary_create(&op, hash, cmp, 13);
 }
 
-void hash_tests_cleanup(void *p) {
+void hash_tests_cleanup(void) {
     scf_complete(&op);
 }
-
-BEGIN_TEST_GROUP(hash_tests)
-    INIT(hash_tests_init)
-    CLEANUP(hash_tests_cleanup)
-    TEST(test_initial_size)
-    TEST(test_add_and_retrieve)
-    TEST(test_add_existing)
-    TEST(test_key_not_found)
-    TEST(test_dictionary_remove)
-    TEST(test_dictionary_remove_not_present)
-    TEST(test_dictionary_get_items)
-    TEST(test_collisions)
-END_TEST_GROUP
 
 bool test_initial_size(void) {
     return ASSERT_EQ(16, dict.capacity);
@@ -166,4 +153,19 @@ bool test_collisions(void) {
     
     return ASSERT_EQ(16, dict.max_collisions);
 }
+
+BEGIN_TEST_GROUP(hash_tests)
+    INIT(hash_tests_init)
+    CLEANUP(hash_tests_cleanup)
+    TEST(test_initial_size)
+    TEST(test_add_and_retrieve)
+    TEST(test_add_existing)
+    TEST(test_key_not_found)
+    TEST(test_dictionary_remove)
+    TEST(test_dictionary_remove_not_present)
+    TEST(test_dictionary_get_items)
+    TEST(test_collisions)
+END_TEST_GROUP
+
+
 

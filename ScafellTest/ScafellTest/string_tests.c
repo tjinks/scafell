@@ -12,20 +12,6 @@
 
 static SCF_OPERATION(op);
 
-BEGIN_TEST_GROUP(string_tests)
-    INIT(init_string_tests)
-    CLEANUP(cleanup_string_tests)
-    TEST(test_utf8_from_codepoint)
-    TEST(test_char_info)
-    TEST(test_invalid_char_info)
-    TEST(test_string_from_cstr_valid)
-    TEST(test_string_from_cstr_invalid)
-    TEST(test_utf8_current_and_next)
-    TEST(test_utf8_prev)
-    TEST(test_scf_substring)
-    TEST(test_utf8_iterator_at)
-END_TEST_GROUP
-
 void init_string_tests(void) {
     scf_ucdb_init();
 }
@@ -165,3 +151,19 @@ bool test_string_from_cstr_invalid(void) {
     result &= ASSERT_EQ(3, scf_string_byte_count(&s));
     return result;
 }
+
+BEGIN_TEST_GROUP(string_tests)
+    INIT(init_string_tests)
+    CLEANUP(cleanup_string_tests)
+    TEST(test_utf8_from_codepoint)
+    TEST(test_char_info)
+    TEST(test_invalid_char_info)
+    TEST(test_string_from_cstr_valid)
+    TEST(test_string_from_cstr_invalid)
+    TEST(test_utf8_current_and_next)
+    TEST(test_utf8_prev)
+    TEST(test_scf_substring)
+    TEST(test_utf8_iterator_at)
+END_TEST_GROUP
+
+

@@ -39,12 +39,6 @@ void mmgt_init(void) {
     alloc3_cleanup_count = 0;
 }
 
-BEGIN_TEST_GROUP(mmgt_tests)
-    INIT(mmgt_init)
-    TEST(test_alloc_and_free)
-    TEST(test_realloc)
-END_TEST_GROUP
-
 bool test_alloc_and_free(void) {
     SCF_OPERATION(op);
     alloc1 = scf_alloc_with_cleanup(&op, cleanup, 10);
@@ -69,4 +63,12 @@ bool test_realloc(void) {
     && ASSERT_EQ(1, alloc2_cleanup_count)
     && ASSERT_EQ(1, alloc3_cleanup_count);
 }
+
+BEGIN_TEST_GROUP(mmgt_tests)
+    INIT(mmgt_init)
+    TEST(test_alloc_and_free)
+    TEST(test_realloc)
+END_TEST_GROUP
+
+
 

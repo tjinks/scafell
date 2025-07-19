@@ -207,8 +207,8 @@
             filePath = "ScafellTest/ScafellTest/hash_tests.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "167"
-            endingLineNumber = "167"
+            startingLineNumber = "154"
+            endingLineNumber = "154"
             landmarkName = "test_collisions()"
             landmarkType = "9">
          </BreakpointContent>
@@ -223,8 +223,8 @@
             filePath = "ScafellTest/ScafellTest/hash_tests.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "67"
-            endingLineNumber = "67"
+            startingLineNumber = "54"
+            endingLineNumber = "54"
             landmarkName = "test_add_and_retrieve()"
             landmarkType = "9">
          </BreakpointContent>
@@ -239,8 +239,8 @@
             filePath = "ScafellTest/ScafellTest/hash_tests.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "64"
-            endingLineNumber = "64"
+            startingLineNumber = "51"
+            endingLineNumber = "51"
             landmarkName = "test_add_and_retrieve()"
             landmarkType = "9">
          </BreakpointContent>
@@ -287,8 +287,8 @@
             filePath = "ScafellTest/ScafellTest/hash_tests.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "71"
-            endingLineNumber = "71"
+            startingLineNumber = "58"
+            endingLineNumber = "58"
             landmarkName = "test_add_and_retrieve()"
             landmarkType = "9">
          </BreakpointContent>
@@ -303,8 +303,8 @@
             filePath = "ScafellTest/ScafellTest/hash_tests.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "57"
-            endingLineNumber = "57"
+            startingLineNumber = "44"
+            endingLineNumber = "44"
             landmarkName = "test_initial_size()"
             landmarkType = "9">
          </BreakpointContent>
@@ -351,8 +351,8 @@
             filePath = "ScafellTest/ScafellTest/hash_tests.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "165"
-            endingLineNumber = "165"
+            startingLineNumber = "152"
+            endingLineNumber = "152"
             landmarkName = "test_collisions()"
             landmarkType = "9">
          </BreakpointContent>
@@ -367,8 +367,8 @@
             filePath = "ScafellTest/ScafellTest/hash_tests.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "164"
-            endingLineNumber = "164"
+            startingLineNumber = "151"
+            endingLineNumber = "151"
             landmarkName = "test_collisions()"
             landmarkType = "9">
          </BreakpointContent>
@@ -399,8 +399,8 @@
             filePath = "ScafellTest/ScafellTest/buffer_tests.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "52"
-            endingLineNumber = "52"
+            startingLineNumber = "43"
+            endingLineNumber = "43"
             landmarkName = "test_buffer_insert_bytes()"
             landmarkType = "9">
          </BreakpointContent>
@@ -431,8 +431,8 @@
             filePath = "ScafellTest/ScafellTest/buffer_tests.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "29"
-            endingLineNumber = "29"
+            startingLineNumber = "20"
+            endingLineNumber = "20"
             landmarkName = "buffer_tests_cleanup()"
             landmarkType = "9">
          </BreakpointContent>
@@ -447,8 +447,8 @@
             filePath = "ScafellTest/ScafellTest/buffer_tests.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "78"
-            endingLineNumber = "78"
+            startingLineNumber = "69"
+            endingLineNumber = "69"
             landmarkName = "test_buffer_extract()"
             landmarkType = "9">
          </BreakpointContent>
@@ -463,9 +463,9 @@
             filePath = "ScafellTest/ScafellTest/list_tests.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "50"
-            endingLineNumber = "50"
-            landmarkName = "test_add()"
+            startingLineNumber = "36"
+            endingLineNumber = "36"
+            landmarkName = "list_cleanup()"
             landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>
@@ -479,8 +479,8 @@
             filePath = "ScafellTest/ScafellTest/buffer_tests.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "73"
-            endingLineNumber = "73"
+            startingLineNumber = "64"
+            endingLineNumber = "64"
             landmarkName = "test_buffer_extract()"
             landmarkType = "9">
          </BreakpointContent>
@@ -495,9 +495,9 @@
             filePath = "ScafellTest/ScafellTest/string_tests.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "155"
-            endingLineNumber = "155"
-            landmarkName = "test_string_from_cstr_valid()"
+            startingLineNumber = "141"
+            endingLineNumber = "141"
+            landmarkName = "test_char_info()"
             landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>
@@ -511,9 +511,9 @@
             filePath = "ScafellTest/ScafellTest/string_tests.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "165"
-            endingLineNumber = "165"
-            landmarkName = "test_string_from_cstr_invalid()"
+            startingLineNumber = "151"
+            endingLineNumber = "151"
+            landmarkName = "test_string_from_cstr_valid()"
             landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>
@@ -521,38 +521,6 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "394D89F3-878D-460F-84B8-0AA91AC4E642"
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "ScafellTest/ScafellTest/mmgt_tests.c"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "70"
-            endingLineNumber = "70"
-            landmarkName = "test_realloc()"
-            landmarkType = "9">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "90C40AD7-D049-4FBB-95EC-77C33DCC677E"
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "ScafellTest/ScafellTest/mmgt_tests.c"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "65"
-            endingLineNumber = "65"
-            landmarkName = "test_realloc()"
-            landmarkType = "9">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "0496A3F4-EF4B-433A-9F01-0A8A0C463094"
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
@@ -568,6 +536,38 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
+            uuid = "90C40AD7-D049-4FBB-95EC-77C33DCC677E"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ScafellTest/ScafellTest/mmgt_tests.c"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "59"
+            endingLineNumber = "59"
+            landmarkName = "test_realloc()"
+            landmarkType = "9">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "0496A3F4-EF4B-433A-9F01-0A8A0C463094"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ScafellTest/ScafellTest/mmgt_tests.c"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "58"
+            endingLineNumber = "58"
+            landmarkName = "test_realloc()"
+            landmarkType = "9">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
             uuid = "D54E7F6B-C204-47B0-B9FC-C2DB6C95F160"
             shouldBeEnabled = "No"
             ignoreCount = "0"
@@ -575,9 +575,9 @@
             filePath = "ScafellTest/ScafellTest/string_tests.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "152"
-            endingLineNumber = "152"
-            landmarkName = "test_string_from_cstr_valid()"
+            startingLineNumber = "138"
+            endingLineNumber = "138"
+            landmarkName = "test_char_info()"
             landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>
@@ -591,8 +591,8 @@
             filePath = "ScafellTest/ScafellTest/string_tests.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "99"
-            endingLineNumber = "99"
+            startingLineNumber = "85"
+            endingLineNumber = "85"
             landmarkName = "test_utf8_current_and_next()"
             landmarkType = "9">
          </BreakpointContent>
@@ -623,9 +623,9 @@
             filePath = "ScafellTest/ScafellTest/string_tests.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "44"
-            endingLineNumber = "44"
-            landmarkName = "test_scf_substring()"
+            startingLineNumber = "30"
+            endingLineNumber = "30"
+            landmarkName = "init_string_tests()"
             landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>
@@ -683,10 +683,10 @@
             filePath = "ScafellTest/ScafellTest/string_tests.c"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "42"
-            endingLineNumber = "42"
-            landmarkName = "test_scf_substring()"
-            landmarkType = "9">
+            startingLineNumber = "28"
+            endingLineNumber = "28"
+            landmarkName = "unknown"
+            landmarkType = "0">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -718,6 +718,22 @@
             startingLineNumber = "134"
             endingLineNumber = "134"
             landmarkName = "scf_substring(iter, length)"
+            landmarkType = "9">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "8FFA1672-A929-4B76-BD1B-1D3E26819DAF"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ScafellTest/ScafellTest/scuts.c"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "39"
+            endingLineNumber = "39"
+            landmarkName = "scuts_add_test(tg, name, test_func)"
             landmarkType = "9">
          </BreakpointContent>
       </BreakpointProxy>

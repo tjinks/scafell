@@ -32,7 +32,7 @@ typedef struct {
 
 extern const utf8_char UTF8_INVALID;
 
-utf8_char utf8_from_codepoint(scf_codepoint cp);
+utf8_char utf8_from_codepoint(wchar_t cp);
 
 scf_string scf_string_create(scf_operation *op);
 

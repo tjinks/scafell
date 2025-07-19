@@ -13,20 +13,6 @@
 static scf_list list;
 static SCF_OPERATION(op);
 
-BEGIN_TEST_GROUP(list_tests)
-    INIT(list_init)
-    CLEANUP(list_cleanup)
-    TEST(test_add)
-    TEST(test_append)
-    TEST(test_insert_at_end)
-    TEST(test_insert_in_middle)
-    TEST(test_insert_at_start)
-    TEST(test_remove_at_end)
-    TEST(test_remove_in_middle)
-    TEST(test_remove_at_start)
-    TEST(test_for_each)
-END_TEST_GROUP
-
 void list_init(void) {
     list = scf_list_create(&op, 10);
 }
@@ -191,3 +177,18 @@ bool test_for_each(void) {
     
     return ASSERT_EQ(6, sum);
 }
+
+BEGIN_TEST_GROUP(list_tests)
+    INIT(list_init)
+    CLEANUP(list_cleanup)
+    TEST(test_add)
+    TEST(test_append)
+    TEST(test_insert_at_end)
+    TEST(test_insert_in_middle)
+    TEST(test_insert_at_start)
+    TEST(test_remove_at_end)
+    TEST(test_remove_in_middle)
+    TEST(test_remove_at_start)
+    TEST(test_for_each)
+END_TEST_GROUP
+

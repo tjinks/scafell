@@ -55,7 +55,7 @@ static bool is_valid_utf8_char(const scf_string *s, size_t *offset) {
     return true;
 }
 
-utf8_char utf8_from_codepoint(scf_codepoint cp) {
+utf8_char utf8_from_codepoint(wchar_t cp) {
     if (cp <= 0x7F) {
         return cp;
     }

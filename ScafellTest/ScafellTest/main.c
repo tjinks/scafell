@@ -8,12 +8,13 @@
 #include <stdio.h>
 #include "scuts.h"
 
+
 int main(int argc, const char * argv[]) {
-    RUN_TEST_GROUP(mmgt_tests)
-    RUN_TEST_GROUP(list_tests)
-    RUN_TEST_GROUP(hash_tests)
-    RUN_TEST_GROUP(string_tests)
-    RUN_TEST_GROUP(buffer_tests)
-    printf("%s\n", __FUNCTION__);
-    return failedCount != 0;
+    
+    REGISTER(mmgt_tests);
+    REGISTER(list_tests);
+    REGISTER(hash_tests);
+    REGISTER(string_tests);
+    REGISTER(buffer_tests);
+    return scuts(argc, argv);
 }

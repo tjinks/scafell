@@ -12,15 +12,6 @@
 
 static SCF_OPERATION(op);
 
-BEGIN_TEST_GROUP(buffer_tests)
-    INIT(buffer_tests_init)
-    CLEANUP(buffer_tests_cleanup)
-    TEST(test_buffer_append_bytes)
-    TEST(test_buffer_insert_bytes)
-    TEST(test_buffer_remove)
-    TEST(test_buffer_extract)
-END_TEST_GROUP
-
 void buffer_tests_init(void) {
     
 }
@@ -80,4 +71,13 @@ bool test_buffer_extract(void) {
     result &= ASSERT_EQ(0, memcmp("234", (char *)buf2.data, buf2.size));
     return result;
 }
+
+BEGIN_TEST_GROUP(buffer_tests)
+    INIT(buffer_tests_init)
+    CLEANUP(buffer_tests_cleanup)
+    TEST(test_buffer_append_bytes)
+    TEST(test_buffer_insert_bytes)
+    TEST(test_buffer_remove)
+    TEST(test_buffer_extract)
+END_TEST_GROUP
 
