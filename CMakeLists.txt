@@ -5,5 +5,5 @@ add_library(compiler_flags INTERFACE)
 target_compile_features(compiler_flags INTERFACE c_std_11)
 
 add_subdirectory(scafell)
-#add_subdirectory(Scafell_Tests)
+add_subdirectory(scafell-tests)
 
