@@ -161,7 +161,7 @@ bool test_remove_at_start(void) {
 }
 
 static bool callback(scf_datum *datum, void *ctx) {
-    ASSERT_EQ(DT_INT, datum->type);
+    ASSERT_EQ(DT_INT, (int)datum->type);
     int *sum = (int *)ctx;
     *sum += datum->i_value;
     return true;

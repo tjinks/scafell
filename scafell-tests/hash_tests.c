@@ -74,7 +74,7 @@ bool test_add_existing(void) {
     scf_dictionary_add(&dict, key, value);
     scf_datum *retrieved = scf_dictionary_lookup(&dict, key);
     return ASSERT_FALSE(retrieved == NULL)
-        && ASSERT_EQ(DT_INT, retrieved->type) && ASSERT_EQ(99, retrieved->i_value)
+        && ASSERT_EQ(DT_INT, (int)retrieved->type) && ASSERT_EQ(99, retrieved->i_value)
         && ASSERT_EQ(13, dict.size);
 }
 
@@ -111,7 +111,7 @@ bool test_dictionary_remove_not_present(void) {
     
     scf_datum key = dt_int(99);
     scf_datum removed = scf_dictionary_remove(&dict, key);
-    return ASSERT_EQ(DT_NONE, removed.type) && ASSERT_EQ(13, dict.size);
+    return ASSERT_EQ(DT_NONE, (int)removed.type) && ASSERT_EQ(13, dict.size);
 }
 
 static bool contains_item(const scf_list list, int key, int value) {

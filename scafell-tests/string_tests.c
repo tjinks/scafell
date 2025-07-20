@@ -108,7 +108,7 @@ static bool check_info(scf_char_info expected) {
     result &= ASSERT_EQ(expected.title, actual.title);
     result &= ASSERT_EQ(expected.lower, actual.lower);
     result &= ASSERT_EQ(expected.digit_value, actual.digit_value);
-    result &= ASSERT_EQ(expected.category, actual.category);
+    result &= ASSERT_EQ(expected.category, (int)actual.category);
     return result;
 }
 
@@ -130,7 +130,7 @@ bool test_char_info(void) {
 
 bool test_invalid_char_info(void) {
     scf_char_info info = scf_get_char_info(0xF09FAB97);
-    return ASSERT_EQ(UTF8_INVALID, info.base) && ASSERT_EQ(UC_NONE, info.category);
+    return ASSERT_EQ(UTF8_INVALID, info.base) && ASSERT_EQ(UC_NONE, (int)info.category);
 }
 
 bool test_string_from_cstr_valid(void) {
