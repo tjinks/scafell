@@ -55,7 +55,7 @@ static bool is_valid_utf8_char(const scf_string *s, size_t *offset) {
     return true;
 }
 
-utf8_char utf8_from_codepoint(wchar_t cp) {
+utf8_char utf8_from_codepoint(int32_t cp) {
     if (cp <= 0x7F) {
         return cp;
     }
@@ -72,7 +72,7 @@ utf8_char utf8_from_codepoint(wchar_t cp) {
         int byte3 = 0xE0 + (cp >> 12);
         return byte3 + (byte2 << 8) + (byte1 << 16);
     }
-    
+
     if (cp <= 0x10FFFF) {
         int byte1 = 0x80 + (cp & 0x3F);
         int byte2 = 0x80 + ((cp >> 6) & 0x3F);
@@ -235,7 +235,6 @@ utf8_iterator utf8_iterator_at(const scf_string *s, int char_index) {
 extern scf_string scf_string_from_cstr(scf_operation *op, const char *cstr);
 extern size_t scf_string_byte_count(const scf_string *s);
 extern utf8_iterator scf_string_iterator(const scf_string *s);
-extern bool scf_is_valid_utf8(const scf_string *s);
 extern bool utf8_is_at_end(utf8_iterator iter);
 extern bool utf8_is_at_start(utf8_iterator iter);
 

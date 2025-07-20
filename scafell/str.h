@@ -16,6 +16,13 @@
 #include "mmgt.h"
 #include "err_handling.h"
 
+/*
+ * SCF_SHORT_WCHAR is defined on systems (Windows) where wchar_t is too small to hold all unicode codepoints.
+ */
+#if WCHAR_MAX < 0x10FFFF
+#define SCF_SHORT_WCHAR
+#endif
+
 typedef int32_t utf8_char;
 
 typedef struct {
@@ -32,7 +39,7 @@ typedef struct {
 
 extern const utf8_char UTF8_INVALID;
 
-utf8_char utf8_from_codepoint(wchar_t cp);
+utf8_char utf8_from_codepoint(int32_t cp);
 
 scf_string scf_string_create(scf_operation *op);
 
