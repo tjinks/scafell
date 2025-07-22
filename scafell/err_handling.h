@@ -9,7 +9,7 @@
 #define err_handling_h
 
 #include <stdnoreturn.h>
-#include "os/osdefs.h"
+#include "osdefs.h"
 
 #define MAX_ERR_MSG_LEN (255)
 

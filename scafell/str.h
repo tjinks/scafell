@@ -12,7 +12,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "os/osdefs.h"
+#include "osdefs.h"
 #include "mmgt.h"
 #include "err_handling.h"
 

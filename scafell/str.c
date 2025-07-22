@@ -7,7 +7,7 @@
 
 #include "str.h"
 #include "datum.h"
-#include "os/osdefs.h"
+#include "osdefs.h"
 #include "err_handling.h"
 
 const utf8_char UTF8_INVALID = -1;

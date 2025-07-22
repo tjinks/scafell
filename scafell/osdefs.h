@@ -9,7 +9,7 @@
 #define osdefs_h
 
 #ifdef WIN32
-#include "os/oswin.h"
+#include "oswin.h"
 #endif
 
 #ifdef __APPLE__

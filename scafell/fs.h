@@ -2,7 +2,7 @@
 #define fs_h
 
 #include <stdbool.h>
-#include "os/osdefs.h"
+#include "osdefs.h"
 #include "mmgt.h"
 #include "err_handling.h"
 #include "str.h"

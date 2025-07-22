@@ -7,9 +7,9 @@ add_library(scafell
 	str.c str.h
 	ucdb.c ucdb.h
 	unicode_data.h
-	os/osdefs.h
-	os/osunix.h
-	os/oswin.h
+	osdefs.h
+	osunix.h
+	oswin.h
 	fs.h
  )
 
