@@ -8,8 +8,8 @@
 #ifndef osunix_h
 #define osunix_h
 
-typedef int scf_os_error_code;
+#define SCF_EXTERNAL
 
-//typedef int scf_codepoint;
+typedef int scf_os_error_code;
 
 #endif /* osunix_h */

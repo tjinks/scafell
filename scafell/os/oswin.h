@@ -1,17 +1,18 @@
 //
-//  osunix.h
+//  oswin.h
 //  scafell
 //
 //  Created by Tony on 16/06/2025.
 //
 
-#ifndef osunix_h
-#define osunix_h
+#ifndef oswin_h
+#define oswin_h
 
 #include <Windows.h>
 
+#define SCF_EXTERNAL __stdcall
+
 typedef DWORD scf_os_error_code;
+typedef PLARGE_INTEGER scf_file_size;
 
-typedef wchar_t scf_codepoint;
-
-#endif /* osunix_h */
+#endif /* oswin_h */

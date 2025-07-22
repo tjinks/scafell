@@ -10,6 +10,7 @@ add_library(scafell
 	os/osdefs.h
 	os/osunix.h
 	os/oswin.h
+	fs.h
  )
 
 target_link_libraries(scafell PUBLIC compiler_flags)
