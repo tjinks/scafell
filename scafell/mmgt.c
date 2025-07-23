@@ -154,7 +154,7 @@ scf_buffer scf_buffer_extract(const scf_buffer *buffer, size_t starting_from, si
 
 extern void scf_buffer_append(scf_buffer *buf1, const scf_buffer *buf2);
 
-extern void scf_buffer_insert(scf_buffer *buf1, scf_buffer *buf2, size_t before);
+extern void scf_buffer_insert(scf_buffer *buf1, const scf_buffer *buf2, size_t before);
 
 
 

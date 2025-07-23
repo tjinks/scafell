@@ -52,7 +52,7 @@ inline void scf_buffer_append(scf_buffer *buf1, const scf_buffer *buf2) {
     scf_buffer_append_bytes(buf1, buf2->data, buf2->size);
 }
 
-inline void scf_buffer_insert(scf_buffer *buf1, scf_buffer *buf2, size_t before) {
+inline void scf_buffer_insert(scf_buffer *buf1, const scf_buffer *buf2, size_t before) {
     scf_buffer_insert_bytes(buf1, buf2->data, before, buf2->size);
 }
 

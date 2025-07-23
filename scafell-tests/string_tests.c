@@ -26,6 +26,8 @@ bool test_scf_substring(void) {
     scf_string s = scf_string_from_cstr(&op, "A£B€");
     utf8_iterator iter = utf8_iterator_at(&s, 1);
     scf_string ss = scf_substring(iter, 2);
+    ASSERT_EQ(4, ss.chars.size);
+    ASSERT_EQ(0, (int)ss.chars.data[3]);
     result &= ASSERT_EQ(2, ss.char_count);
     utf8_iterator ss_iter = scf_string_iterator(&ss);
     result &= ASSERT_EQ(0xa3c2, utf8_current(ss_iter));
@@ -152,6 +154,16 @@ bool test_string_from_cstr_invalid(void) {
     return result;
 }
 
+bool test_string_from_wstr(void) {
+    const wchar_t wstr[] = {'a', 0x9EF, 'b', 0};
+    bool valid;
+    scf_string s = scf_string_from_wstr(&op, wstr, &valid);
+    bool result = ASSERT_TRUE(valid);
+    result &= ASSERT_EQ(3, s.char_count);
+    result &= ASSERT_EQ('a', s.chars.data[0]);
+    return result;
+}
+
 BEGIN_TEST_GROUP(string_tests)
     INIT(init_string_tests)
     CLEANUP(cleanup_string_tests)
@@ -164,6 +176,7 @@ BEGIN_TEST_GROUP(string_tests)
     TEST(test_utf8_prev)
     TEST(test_scf_substring)
     TEST(test_utf8_iterator_at)
+    TEST(test_string_from_wstr)
 END_TEST_GROUP
 
 

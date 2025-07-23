@@ -55,6 +55,39 @@ static bool is_valid_utf8_char(const scf_string *s, size_t *offset) {
     return true;
 }
 
+/*
+ * Appends a character. It is assumed that the original string is *not* null terminated, and
+ * the resulting string is not null-terminated either.
+ */
+static void append_char(scf_string *s, utf8_char c) {
+    unsigned char bytes[] = {0, 0, 0, 0};
+    size_t byte_count = get_utf8_byte_count((unsigned char) c);
+    switch (byte_count) {
+        case 4:
+            bytes[3] = (unsigned char) (c >> 24);
+        case 3:
+            bytes[2] = (unsigned char) (c >> 16);
+        case 2:
+            bytes[1] = (unsigned char) (c >> 8);
+        case 1:
+            bytes[0] = (unsigned char) c;
+            break;
+        default:
+            scf_raise_error(SCF_INVALID_UTF8_OPERATION, "Invalid UTF8 character passed to append_char");
+    }
+    
+    scf_buffer_append_bytes(&s->chars, bytes, byte_count);
+    s->char_count++;
+}
+
+static inline void remove_terminator(scf_string *s) {
+    s->chars.size--;
+}
+
+static inline void append_terminator(scf_string *s) {
+    scf_buffer_append_bytes(&s->chars, "", 1);
+}
+
 utf8_char utf8_from_codepoint(int32_t cp) {
     if (cp <= 0x7F) {
         return cp;
@@ -85,7 +118,8 @@ utf8_char utf8_from_codepoint(int32_t cp) {
 }
 
 scf_string scf_string_create(scf_operation *op) {
-    scf_string result = {true, 0, scf_buffer_create(op, 0)};
+    scf_string result = {true, 0, scf_buffer_create(op, 1)};
+    append_terminator(&result);
     return result;
 }
 
@@ -105,8 +139,34 @@ scf_string scf_string_from_bytes(scf_operation *op, const void *p, size_t byte_c
     return result;
 }
 
+scf_string scf_string_from_cstr(scf_operation *op, const char *cstr) {
+    scf_string result = scf_string_from_bytes(op, cstr, strlen(cstr));
+    append_terminator(&result);
+    return result;
+}
+
+scf_string scf_string_from_wstr(scf_operation *op, const wchar_t *wstr, bool *is_valid) {
+    *is_valid = true;
+    scf_string result = scf_string_create(op);
+    remove_terminator(&result);
+    const wchar_t *c = wstr;
+    while (*c) {
+        utf8_char utf8 = utf8_from_codepoint(*c);
+        if (utf8 == UTF8_INVALID) {
+            *is_valid = false;
+            break;
+        }
+        
+        append_char(&result, utf8);
+        c++;
+    }
+    
+    append_terminator(&result);
+    return result;
+}
+
 void scf_string_append(scf_string *s1, const scf_string *s2) {
-    scf_buffer_append(&s1->chars, &s2->chars);
+    scf_buffer_insert(&s1->chars, &s2->chars, s1->chars.size - 1);
     if (s1->is_utf8) {
         if (!s2->is_utf8) {
             s1->is_utf8 = false;
@@ -128,34 +188,22 @@ scf_string scf_substring(utf8_iterator iter, size_t length) {
     if (length == 0) {
         return result;
     }
-        
+    
+    remove_terminator(&result);
     for (int i = 0; i < length && !utf8_is_at_end(iter); i++) {
         utf8_char c = utf8_current(iter);
-        scf_string_append_char(&result, c);
+        append_char(&result, c);
         utf8_next(&iter);
     }
+    append_terminator(&result);
     
     return result;
 }
 
 void scf_string_append_char(scf_string *s, utf8_char c) {
-    unsigned char bytes[4] = {0, 0, 0, 0};
-    size_t byte_count = get_utf8_byte_count((unsigned char) c);
-    switch (byte_count) {
-        case 4:
-            bytes[3] = (unsigned char) (c >> 24);
-        case 3:
-            bytes[2] = (unsigned char) (c >> 16);
-        case 2:
-            bytes[1] = (unsigned char) (c >> 8);
-        case 1:
-            bytes[0] = (unsigned char) c;
-            break;
-        default:
-            scf_raise_error(SCF_INVALID_UTF8_OPERATION, "Invalid UTF8 character passed to scf_string_append_char");
-    }
-    
-    scf_buffer_append_bytes(&s->chars, bytes, byte_count);
+    remove_terminator(s);
+    append_char(s, c);
+    append_terminator(s);
     s->char_count++;
 }
 
@@ -170,7 +218,7 @@ bool utf8_next(utf8_iterator *iter) {
     size_t new_byte_index = iter->byte_index + get_utf8_byte_count(iter->s->chars.data[iter->byte_index]);
     iter->byte_index = new_byte_index;
     iter->char_index++;
-    return (new_byte_index < iter->s->chars.size);
+    return (new_byte_index < iter->s->chars.size - 1);
 }
 
 bool utf8_prev(utf8_iterator *iter) {

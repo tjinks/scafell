@@ -59,12 +59,15 @@ bool utf8_prev(utf8_iterator *iter);
 
 utf8_char utf8_current(utf8_iterator iter);
 
-inline scf_string scf_string_from_cstr(scf_operation *op, const char *cstr) {
-    return scf_string_from_bytes(op, cstr, strlen(cstr));
-}
+scf_string scf_string_from_cstr(scf_operation *op, const char *cstr);
 
+scf_string scf_string_from_wstr(scf_operation *op, const wchar_t *wstr, bool *is_valid);
+
+/*
+ * Returns the number of bytes required to store the string, excluding the terminating zero byte.
+ */
 inline size_t scf_string_byte_count(const scf_string *s) {
-    return s->chars.size;
+    return s->chars.size - 1;
 }
 
 utf8_iterator utf8_iterator_at(const scf_string *s, int char_index);
