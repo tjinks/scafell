@@ -4,6 +4,7 @@ project(Scafell VERSION 0.1)
 add_library(compiler_flags INTERFACE)
 target_compile_features(compiler_flags INTERFACE c_std_11)
 
+add_subdirectory(scuts)
 add_subdirectory(scafell)
 add_subdirectory(scafell-tests)
 
