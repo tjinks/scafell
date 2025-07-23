@@ -5,6 +5,6 @@ add_library(compiler_flags INTERFACE)
 target_compile_features(compiler_flags INTERFACE c_std_11)
 
 add_subdirectory(scuts)
-add_subdirectory(scafell)
-add_subdirectory(scafell-tests)
+add_subdirectory(scf-core)
+add_subdirectory(scf-core-tests)
 

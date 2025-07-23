@@ -1,4 +1,4 @@
-add_library(scafell
+add_library(scf-core
 	datum.c datum.h
 	err_handling.c err_handling.h
 	hash.c hash.h
@@ -13,6 +13,6 @@ add_library(scafell
 	fs.h
  )
 
-target_link_libraries(scafell PUBLIC compiler_flags)
+target_link_libraries(scf-core PUBLIC compiler_flags)
 
 
