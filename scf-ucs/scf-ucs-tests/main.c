@@ -12,5 +12,6 @@
 int main(int argc, const char * argv[]) {
     
     REGISTER(ucsdb_tests);
+    REGISTER(codec_tests);
     return scuts(argc, argv);
 }

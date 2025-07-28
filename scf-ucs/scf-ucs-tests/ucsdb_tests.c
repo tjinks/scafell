@@ -5,7 +5,6 @@
 //  Created by Tony on 17/06/2025.
 //
 
-#include <stdio.h>
 #include "scuts.h"
 #include "ucsdb.h"
 
@@ -44,7 +43,6 @@ BEGIN_TEST_GROUP(ucsdb_tests)
     CLEANUP(cleanup)
     TEST(test_lookup_valid_codepoint)
     TEST(test_lookup_invalid_codepoint)
-//    TEST(test_realloc)
 END_TEST_GROUP
 
 

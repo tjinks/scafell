@@ -19,7 +19,7 @@ typedef enum {
     ,SCF_LOGIC_ERROR
     ,SCF_OS_ERROR
     ,SCF_BAD_INDEX
-    ,SCF_INVALID_UTF8_OPERATION
+    ,SCF_INVALID_ENCODING
 } scf_error_code;
 
 typedef struct scf_err_info {

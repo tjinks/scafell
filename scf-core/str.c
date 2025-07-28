@@ -73,7 +73,7 @@ static void append_char(scf_string *s, utf8_char c) {
             bytes[0] = (unsigned char) c;
             break;
         default:
-            scf_raise_error(SCF_INVALID_UTF8_OPERATION, "Invalid UTF8 character passed to append_char");
+            scf_raise_error(SCF_INVALID_ENCODING, "Invalid UTF8 character passed to append_char");
     }
     
     scf_buffer_append_bytes(&s->chars, bytes, byte_count);
@@ -236,7 +236,7 @@ bool utf8_prev(utf8_iterator *iter) {
 }
 
 utf8_char utf8_current(utf8_iterator iter) {
-    if (utf8_is_at_end(iter)) scf_raise_error(SCF_INVALID_UTF8_OPERATION, "Iterator points beyond end of string");
+    if (utf8_is_at_end(iter)) scf_raise_error(SCF_INVALID_ENCODING, "Iterator points beyond end of string");
     unsigned char *current_char = iter.s->chars.data + iter.byte_index;
     utf8_char result = 0;
     size_t byte_count = get_utf8_byte_count(current_char[0]);
@@ -251,7 +251,7 @@ utf8_char utf8_current(utf8_iterator iter) {
             result += current_char[0];
             break;
         default:
-            scf_raise_error(SCF_INVALID_UTF8_OPERATION, "Found invalid UTF8 byte sequence in string");
+            scf_raise_error(SCF_INVALID_ENCODING, "Found invalid UTF8 byte sequence in string");
     }
     
     return result;
