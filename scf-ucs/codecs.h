@@ -9,6 +9,7 @@
 #define codecs_h
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #include "mmgt.h"
 

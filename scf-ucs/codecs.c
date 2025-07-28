@@ -263,7 +263,7 @@ bool ucs_encode_bytes(
     decoder dec = get_decoder(source_encoding);
     encoder enc = get_encoder(target_encoding);
     const unsigned char *s = bytes;
-    const unsigned char *end = bytes + length;
+    const unsigned char *end = s + length;
     while (s != end) {
         decoded_char decoded = dec(s, end);
         if (decoded.bytecount == 0) {
