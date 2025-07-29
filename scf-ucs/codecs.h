@@ -25,17 +25,6 @@ typedef enum {
 
 typedef int32_t ucs_codepoint;
 
-typedef struct {
-    ucs_codepoint codepoint;
-    size_t bytecount;
-} decoded_char;
-
-typedef struct {
-    unsigned char bytes[4];
-    size_t bytecount;
-} encoded_char;
-
-
 bool ucs_encode_bytes(
                 const void *bytes,
                 size_t length,

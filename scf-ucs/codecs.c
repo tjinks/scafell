@@ -9,6 +9,16 @@
 #include "ucsdb.h"
 #include "err_handling.h"
 
+typedef struct {
+    ucs_codepoint codepoint;
+    size_t bytecount;
+} decoded_char;
+
+typedef struct {
+    unsigned char bytes[4];
+    size_t bytecount;
+} encoded_char;
+
 typedef decoded_char (*decoder)(const unsigned char *, const unsigned char *);
 
 typedef encoded_char (*encoder)(ucs_codepoint);
@@ -52,12 +62,9 @@ static decoded_char decode_utf8(const unsigned char *s, const unsigned char *end
         result.bytecount = 0;
         result.codepoint = UCS_INVALID;
     } else {
-        ucs_codepoint codepoint = 0;
+        ucs_codepoint codepoint;
         
         switch (bytecount) {
-            case 0:
-                codepoint = UCS_INVALID;
-                break;
             case 1:
                 codepoint = first_byte;
                 break;
@@ -75,6 +82,10 @@ static decoded_char decode_utf8(const unsigned char *s, const unsigned char *end
                 codepoint = (codepoint << 6) + (s[1] & 0x7F);
                 codepoint = (codepoint << 6) + (s[2] & 0x7F);
                 codepoint = (codepoint << 6) + (s[3] & 0x7F);
+                break;
+            default:
+                codepoint = UCS_INVALID;
+                bytecount = 0;
                 break;
         }
         
@@ -216,7 +227,7 @@ static encoded_char encode_utf16_be(ucs_codepoint cp) {
 }
 
 /*-----------------------------------
- * Logic covering all encodings
+ * Logic common to all encodings
  *---------------------------------*/
 static decoder get_decoder(ucs_encoding enc) {
     switch ((int)enc) {
