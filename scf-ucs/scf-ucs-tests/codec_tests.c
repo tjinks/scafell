@@ -36,9 +36,29 @@ static bool test_invalid_utf8_encoding(void) {
     return !result;
 }
 
+static bool test_utf8_to_utf16(void) {
+    const char *utf8 = "A£𐁍";
+    scf_buffer utf16 = scf_buffer_create(&op, 0);
+    bool result = ucs_encode_bytes(utf8, strlen(utf8), UCS_UTF8, &utf16, UCS_UTF16 | UCS_LE);
+    ASSERT_TRUE(result);
+    //Unicode: U+1004D, UTF-8: F0 90 81 8D
+    
+    result = result && ASSERT_EQ(8, utf16.size);
+    result = result && ASSERT_EQ(0x41, utf16.data[0]);
+    result = result && ASSERT_EQ(0x00, utf16.data[1]);
+    result = result && ASSERT_EQ(0xA3, utf16.data[2]);
+    result = result && ASSERT_EQ(0x00, utf16.data[3]);
+    result = result && ASSERT_EQ(0x00, utf16.data[4]);
+    result = result && ASSERT_EQ(0xD8, utf16.data[5]);
+    result = result && ASSERT_EQ(0x4D, utf16.data[6]);
+    result = result && ASSERT_EQ(0xDC, utf16.data[7]);
+    return result;
+}
+
 BEGIN_TEST_GROUP(codec_tests)
 CLEANUP(cleanup)
 TEST(test_valid_utf8_encoding)
 TEST(test_invalid_utf8_encoding)
+TEST(test_utf8_to_utf16)
 END_TEST_GROUP
 

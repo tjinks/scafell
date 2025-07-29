@@ -136,11 +136,11 @@ static inline uint16_t get_unit(const unsigned char *bytes, bool le) {
 
 static inline void put_unit(uint16_t unit, unsigned char *bytes, bool le) {
     if (le) {
-        bytes[0] = unit >> 8;
-        bytes[1] = unit;
-    } else {
         bytes[0] = unit;
         bytes[1] = unit >> 8;
+    } else {
+        bytes[0] = unit >> 8;
+        bytes[1] = unit;
     }
 }
 
@@ -187,8 +187,8 @@ static encoded_char encode_utf16(ucs_codepoint cp, bool le) {
         if (cp > 0x10FFFF) {
             result.bytecount = 0;
         } else {
-            int16_t first_unit = (cp >> 10) + first_high_surrogate;
-            int16_t second_unit = (cp & 0x3F) + first_low_surrogate;
+            uint16_t first_unit = ((cp - 0x10000) >> 10) + first_high_surrogate;
+            uint16_t second_unit = (cp & 0x3FF) + first_low_surrogate;
             put_unit(first_unit, result.bytes, le);
             put_unit(second_unit, result.bytes + 2, le);
             result.bytecount = 4;
