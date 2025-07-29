@@ -170,6 +170,7 @@ static decoded_char decode_utf16(const unsigned char *s, const unsigned char *en
             uint16_t second_unit = get_unit(s + 2, le);
             if (is_low_surrogate(second_unit)) {
                 result.codepoint = ((first_unit - first_high_surrogate) << 10) + second_unit - first_low_surrogate;
+                result.codepoint += 0x10000;
                 result.bytecount = 4;
             }
         }

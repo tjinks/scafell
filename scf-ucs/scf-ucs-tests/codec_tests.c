@@ -36,12 +36,38 @@ static bool test_invalid_utf8_encoding(void) {
     return !result;
 }
 
-static bool test_utf8_to_utf16(void) {
-    const char *utf8 = "A£𐁍";
-    scf_buffer utf16 = scf_buffer_create(&op, 0);
-    bool result = ucs_encode_bytes(utf8, strlen(utf8), UCS_UTF8, &utf16, UCS_UTF16 | UCS_LE);
+/*
+ * The following are encodings (without null terminator) of the string 'A£<U10041>'
+ *
+ * (U10041 = LINEAR B SYLLABLE B043 A3)
+ */
+
+static const unsigned char utf8_encoded_test_data[] = {0x41, 0xC2, 0xA3, 0xF0, 0x90, 0x81, 0x8D};
+static const unsigned char utf16_le_encoded_test_data[] = {0x41, 0x00, 0xA3, 0x00, 0x00, 0xD8, 0x4D, 0xDC};
+
+#define UTF8_LEN (sizeof(utf8_encoded_test_data) / sizeof(unsigned char))
+#define UTF16_LEN (sizeof(utf16_le_encoded_test_data) / sizeof(unsigned char))
+
+static bool test_utf16_le_to_utf8(void) {
+    scf_buffer utf8 = scf_buffer_create(&op, 0);
+    bool result = ucs_encode_bytes(utf16_le_encoded_test_data, UTF16_LEN, UCS_UTF16 | UCS_LE, &utf8, UCS_UTF8);
     ASSERT_TRUE(result);
-    //Unicode: U+1004D, UTF-8: F0 90 81 8D
+    
+    result = result && ASSERT_EQ(UTF8_LEN, utf8.size);
+    result = result && ASSERT_EQ(0x41, utf8.data[0]);
+    result = result && ASSERT_EQ(0xC2, utf8.data[1]);
+    result = result && ASSERT_EQ(0xA3, utf8.data[2]);
+    result = result && ASSERT_EQ(0xF0, utf8.data[3]);
+    result = result && ASSERT_EQ(0x90, utf8.data[4]);
+    result = result && ASSERT_EQ(0x81, utf8.data[5]);
+    result = result && ASSERT_EQ(0x8D, utf8.data[6]);
+    return result;
+}
+
+static bool test_utf8_to_utf16_le(void) {
+    scf_buffer utf16 = scf_buffer_create(&op, 0);
+    bool result = ucs_encode_bytes(utf8_encoded_test_data, UTF8_LEN, UCS_UTF8, &utf16, UCS_UTF16 | UCS_LE);
+    ASSERT_TRUE(result);
     
     result = result && ASSERT_EQ(8, utf16.size);
     result = result && ASSERT_EQ(0x41, utf16.data[0]);
@@ -59,6 +85,7 @@ BEGIN_TEST_GROUP(codec_tests)
 CLEANUP(cleanup)
 TEST(test_valid_utf8_encoding)
 TEST(test_invalid_utf8_encoding)
-TEST(test_utf8_to_utf16)
+TEST(test_utf8_to_utf16_le)
+TEST(test_utf16_le_to_utf8)
 END_TEST_GROUP
 
