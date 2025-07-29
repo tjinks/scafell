@@ -54,13 +54,7 @@ static bool test_utf16_le_to_utf8(void) {
     ASSERT_TRUE(result);
     
     result = result && ASSERT_EQ(UTF8_LEN, utf8.size);
-    result = result && ASSERT_EQ(0x41, utf8.data[0]);
-    result = result && ASSERT_EQ(0xC2, utf8.data[1]);
-    result = result && ASSERT_EQ(0xA3, utf8.data[2]);
-    result = result && ASSERT_EQ(0xF0, utf8.data[3]);
-    result = result && ASSERT_EQ(0x90, utf8.data[4]);
-    result = result && ASSERT_EQ(0x81, utf8.data[5]);
-    result = result && ASSERT_EQ(0x8D, utf8.data[6]);
+    result = result && ASSERT_EQ(0, memcmp(utf8.data, utf8_encoded_test_data, UTF8_LEN));
     return result;
 }
 
@@ -70,14 +64,7 @@ static bool test_utf8_to_utf16_le(void) {
     ASSERT_TRUE(result);
     
     result = result && ASSERT_EQ(8, utf16.size);
-    result = result && ASSERT_EQ(0x41, utf16.data[0]);
-    result = result && ASSERT_EQ(0x00, utf16.data[1]);
-    result = result && ASSERT_EQ(0xA3, utf16.data[2]);
-    result = result && ASSERT_EQ(0x00, utf16.data[3]);
-    result = result && ASSERT_EQ(0x00, utf16.data[4]);
-    result = result && ASSERT_EQ(0xD8, utf16.data[5]);
-    result = result && ASSERT_EQ(0x4D, utf16.data[6]);
-    result = result && ASSERT_EQ(0xDC, utf16.data[7]);
+    result = result && ASSERT_EQ(0, memcmp(utf16.data, utf16_le_encoded_test_data, UTF16_LEN));
     return result;
 }
 
