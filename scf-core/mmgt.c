@@ -156,5 +156,7 @@ extern void scf_buffer_append(scf_buffer *buf1, const scf_buffer *buf2);
 
 extern void scf_buffer_insert(scf_buffer *buf1, const scf_buffer *buf2, size_t before);
 
+extern void scf_buffer_append_byte(scf_buffer *buf, unsigned char byte);
+
 
 

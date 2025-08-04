@@ -16,15 +16,26 @@ typedef enum {
 
 typedef int32_t ucs_codepoint;
 
-extern const ucs_codepoint UCS_INVALID;
+/*------------------------------------------------------------
+ * Holds the UTF8 encoding of a unicode character, in
+ * big-endian format.
+ -----------------------------------------------------------*/
+typedef int32_t ucs_utf8_char;
+
+
+/*------------------------------------------------------------
+ * Used to flag an invalid codepoint or utf8 char value.
+ -----------------------------------------------------------*/
+extern const int32_t UCS_INVALID;
 
 typedef struct {
+    ucs_utf8_char utf8;
     ucs_codepoint codepoint;
     ucs_char_category category;
     int digit_value;
-    ucs_codepoint uc_codepoint;
-    ucs_codepoint lc_codepoint;
-    ucs_codepoint tc_codepoint;
+    ucs_utf8_char uc_utf8;
+    ucs_utf8_char lc_utf8;
+    ucs_utf8_char tc_utf8;
 } ucs_details;
 
 void ucs_dbinit(void);

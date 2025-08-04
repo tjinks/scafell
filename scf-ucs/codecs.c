@@ -27,72 +27,60 @@ typedef encoded_char (*encoder)(ucs_codepoint);
  * UTF8-specific logic
  *---------------------------------*/
 
-inline static size_t get_utf8_bytecount(unsigned char first_byte) {
-    if (first_byte <= 0x7F) return 1;
-    
-    unsigned char disc = (first_byte >> 3) & 0x1F;
-    switch (disc) {
-        case 0x18:
-        case 0x19:
-        case 0x1A:
-        case 0x1B:
-            return 2;
-        case 0x1C:
-        case 0x1D:
-            return 3;
-        case 0x1E:
-            return 4;
-        default:
-            return 0;
+// Declared inline - see codecs.h
+extern size_t ucs_get_utf8_bytecount(unsigned char first_byte);
+
+ucs_codepoint ucs_utf8_get(const unsigned char *current, const unsigned char *end, size_t *bytecount) {
+    if (current == end) {
+        *bytecount = 0;
+        return UCS_INVALID;
     }
+    
+    unsigned char first_byte = current[0];
+    *bytecount = ucs_get_utf8_bytecount(first_byte);
+
+    if (*bytecount > end - current) {
+        *bytecount = 0;
+        return UCS_INVALID;
+    }
+    
+    ucs_codepoint result;
+    switch (*bytecount) {
+        case 1:
+            result = first_byte;
+            break;
+        case 2:
+            result = first_byte & 0x3F;
+            result = (result << 6) + (current[1] & 0x7F);
+            break;
+        case 3:
+            result = first_byte & 0x1F;
+            result = (result << 6) + (current[1] & 0x7F);
+            result = (result << 6) + (current[2] & 0x7F);
+            break;
+        case 4:
+            result = first_byte & 0xF;
+            result = (result << 6) + (current[1] & 0x7F);
+            result = (result << 6) + (current[2] & 0x7F);
+            result = (result << 6) + (current[3] & 0x7F);
+            break;
+        default:
+            result = UCS_INVALID;
+            bytecount = 0;
+            break;
+    }
+    
+    return result;
+
 }
 
 /*
  * Decode a UTF8 character from a byte array, starting at the specified address.
- *
- * It is assumed that the 's' is within the bounds of the array, but is not
- * necessarily the first character of a valid UTF8 sequence.
  */
 static decoded_char decode_utf8(const unsigned char *s, const unsigned char *end) {
-    unsigned char first_byte = s[0];
-    size_t bytecount = get_utf8_bytecount(first_byte);
-
+    const unsigned char *original = s;
     decoded_char result;
-    if (bytecount > end - s) {
-        result.bytecount = 0;
-        result.codepoint = UCS_INVALID;
-    } else {
-        ucs_codepoint codepoint;
-        
-        switch (bytecount) {
-            case 1:
-                codepoint = first_byte;
-                break;
-            case 2:
-                codepoint = first_byte & 0x3F;
-                codepoint = (codepoint << 6) + (s[1] & 0x7F);
-                break;
-            case 3:
-                codepoint = first_byte & 0x1F;
-                codepoint = (codepoint << 6) + (s[1] & 0x7F);
-                codepoint = (codepoint << 6) + (s[2] & 0x7F);
-                break;
-            case 4:
-                codepoint = first_byte & 0xF;
-                codepoint = (codepoint << 6) + (s[1] & 0x7F);
-                codepoint = (codepoint << 6) + (s[2] & 0x7F);
-                codepoint = (codepoint << 6) + (s[3] & 0x7F);
-                break;
-            default:
-                codepoint = UCS_INVALID;
-                bytecount = 0;
-                break;
-        }
-        
-        result.codepoint = codepoint;
-        result.bytecount = bytecount;
-    }
-    
+    result.codepoint = ucs_utf8_get(s, end, &result.bytecount);
     return result;
 }
 
@@ -100,32 +88,48 @@ inline static unsigned char shift_and_mask(ucs_codepoint cp, int shift, unsigned
     return (unsigned char)((cp >> shift) & mask);
 }
 
+void ucs_utf8_put(ucs_codepoint codepoint, unsigned char *target, const unsigned char *end, size_t *bytecount) {
+    if (codepoint <= 0x7F) {
+        *bytecount = 1;
+    } else if (codepoint > 0xFFFF) {
+        if (codepoint > 0x10FFFF) {
+            *bytecount = 0;
+        } else {
+            *bytecount = 4;
+        }
+    } else if (codepoint > 0x7FF) {
+        *bytecount = 3;
+    } else {
+        *bytecount = 2;
+    }
+    
+    if (end - target < *bytecount) *bytecount = 0;
+    
+    switch (*bytecount) {
+        case 1:
+            target[0] = (unsigned char)codepoint;
+            break;
+        case 2:
+            target[0] = 0xC0 | shift_and_mask(codepoint, 6, 0xFF);
+            target[1] = 0x80 | shift_and_mask(codepoint, 0, 0x3F);
+            break;
+        case 3:
+            target[0] = 0xE0 | shift_and_mask(codepoint, 12, 0xFF);
+            target[1] = 0x80 | shift_and_mask(codepoint, 6, 0x3F);
+            target[2] = 0x80 | shift_and_mask(codepoint, 0, 0x3F);
+            break;
+        case 4:
+            target[0] = 0xF0 | shift_and_mask(codepoint, 18, 0xFF);
+            target[1] = 0x80 | shift_and_mask(codepoint, 12, 0x3F);
+            target[2] = 0x80 | shift_and_mask(codepoint, 6, 0x3F);
+            target[3] = 0x80 | shift_and_mask(codepoint, 0, 0x3F);
+            break;
+    }
+}
+
 static encoded_char encode_utf8(ucs_codepoint cp) {
     encoded_char result;
-    if (cp <= 0x7F) {
-        result.bytecount = 1;
-        result.bytes[0] = (unsigned char)cp;
-    } else if (cp > 0xFFFF) {
-        if (cp > 0x10FFFF) {
-            result.bytecount = 0;
-        } else {
-            result.bytecount = 4;
-            result.bytes[0] = 0xF0 | shift_and_mask(cp, 18, 0xFF);
-            result.bytes[1] = 0x80 | shift_and_mask(cp, 12, 0x3F);
-            result.bytes[2] = 0x80 | shift_and_mask(cp, 6, 0x3F);
-            result.bytes[3] = 0x80 | shift_and_mask(cp, 0, 0x3F);
-        }
-    } else if (cp > 0x7FF) {
-        result.bytecount = 3;
-        result.bytes[0] = 0xE0 | shift_and_mask(cp, 12, 0xFF);
-        result.bytes[1] = 0x80 | shift_and_mask(cp, 6, 0x3F);
-        result.bytes[2] = 0x80 | shift_and_mask(cp, 0, 0x3F);
-    } else {
-        result.bytecount = 2;
-        result.bytes[0] = 0xC0 | shift_and_mask(cp, 6, 0xFF);
-        result.bytes[1] = 0x80 | shift_and_mask(cp, 0, 0x3F);
-    }
-
+    ucs_utf8_put(cp, result.bytes, result.bytes + sizeof(result.bytes), &result.bytecount);
     return result;
 }
 
@@ -257,7 +261,7 @@ static encoder get_encoder(ucs_encoding enc) {
     }
 }
                                   
-bool ucs_encode(
+size_t ucs_encode(
                 scf_buffer *source,
                 size_t source_offset,
                 ucs_encoding source_encoding,
@@ -266,7 +270,7 @@ bool ucs_encode(
     return ucs_encode_bytes(source->data, source->size - source_offset, source_encoding, target, target_encoding);
 }
 
-bool ucs_encode_bytes(
+size_t ucs_encode_bytes(
                       const void *bytes,
                       size_t length,
                       ucs_encoding source_encoding,
@@ -274,25 +278,25 @@ bool ucs_encode_bytes(
                       ucs_encoding target_encoding) {
     decoder dec = get_decoder(source_encoding);
     encoder enc = get_encoder(target_encoding);
+    size_t original_target_size = target->size;
+    size_t charcount = 0;
     const unsigned char *s = bytes;
     const unsigned char *end = s + length;
     while (s != end) {
         decoded_char decoded = dec(s, end);
-        if (decoded.bytecount == 0) {
-            return false;
-        }
-        
+        if (decoded.bytecount == 0) goto encoding_failed;
         encoded_char encoded = enc(decoded.codepoint);
-        if (encoded.bytecount == 0) {
-            return false;
-        }
-        
+        if (encoded.bytecount == 0) goto encoding_failed;
         scf_buffer_append_bytes(target, encoded.bytes, encoded.bytecount);
         s += decoded.bytecount;
+        charcount++;
     }
     
-    return true;
+    return charcount;
     
+encoding_failed:
+    target->size = original_target_size;
+    return SIZE_MAX;
 }
 
 

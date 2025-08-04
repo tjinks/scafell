@@ -17,24 +17,26 @@ static void cleanup(void) {
 }
 
 static bool test_lookup_valid_codepoint(void) {
-    ucs_details details = ucs_lookup(0xB5);
+    ucs_details details = ucs_lookup(0xC2B5);
     bool result = ASSERT_EQ(0xB5, details.codepoint);
+    result &= ASSERT_EQ(0xC2B5, details.utf8);
     result &= ASSERT_EQ(UCS_LETTER | UCS_LOWER, (int)details.category);
     result &= ASSERT_EQ(-1, details.digit_value);
-    result &= ASSERT_EQ(0x39C, details.uc_codepoint);
-    result &= ASSERT_EQ(0x39C, details.tc_codepoint);
-    result &= ASSERT_EQ(0xB5, details.lc_codepoint);
+    result &= ASSERT_EQ(0xCE9C, details.uc_utf8);
+    result &= ASSERT_EQ(0xCE9C, details.tc_utf8);
+    result &= ASSERT_EQ(0xC2B5, details.lc_utf8);
     return result;
 }
 
 static bool test_lookup_invalid_codepoint(void) {
     ucs_details details = ucs_lookup(0xDBFF);
-    bool result = ASSERT_EQ(0xDBFF, details.codepoint);
+    bool result = ASSERT_EQ(UCS_INVALID, details.codepoint);
     result &= ASSERT_EQ(UCS_NONE, (int)details.category);
     result &= ASSERT_EQ(-1, details.digit_value);
-    result &= ASSERT_EQ(0xDBFF, details.uc_codepoint);
-    result &= ASSERT_EQ(0xDBFF, details.tc_codepoint);
-    result &= ASSERT_EQ(0xDBFF, details.lc_codepoint);
+    result &= ASSERT_EQ(UCS_INVALID, details.uc_utf8);
+    result &= ASSERT_EQ(UCS_INVALID, details.tc_utf8);
+    result &= ASSERT_EQ(UCS_INVALID, details.lc_utf8);
+    result &= ASSERT_EQ(UCS_INVALID, details.utf8);
     return result;
 }
 

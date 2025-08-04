@@ -56,4 +56,9 @@ inline void scf_buffer_insert(scf_buffer *buf1, const scf_buffer *buf2, size_t b
     scf_buffer_insert_bytes(buf1, buf2->data, before, buf2->size);
 }
 
+inline void scf_buffer_append_byte(scf_buffer *buf, unsigned char byte) {
+    scf_buffer_append_bytes(buf, &byte, 1);
+}
+
+
 #endif /* mmgt_h */

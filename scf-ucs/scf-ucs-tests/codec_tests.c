@@ -31,9 +31,8 @@ static bool test_valid_utf8_encoding(void) {
 static bool test_invalid_utf8_encoding(void) {
     unsigned char data[] = {0x41, 0xC2, 0xA3, 0xF3, 0xA0, 0x81, 0xA1};
     scf_buffer encoded = scf_buffer_create(&op, 10);
-    bool result = ucs_encode_bytes(data, 6, UCS_UTF8, &encoded, UCS_UTF8);
-    ASSERT_FALSE(result);
-    return !result;
+    size_t result = ucs_encode_bytes(data, 6, UCS_UTF8, &encoded, UCS_UTF8);
+    return ASSERT_EQ(SIZE_MAX, result);
 }
 
 /*
@@ -50,8 +49,8 @@ static const unsigned char utf16_le_encoded_test_data[] = {0x41, 0x00, 0xA3, 0x0
 
 static bool test_utf16_le_to_utf8(void) {
     scf_buffer utf8 = scf_buffer_create(&op, 0);
-    bool result = ucs_encode_bytes(utf16_le_encoded_test_data, UTF16_LEN, UCS_UTF16 | UCS_LE, &utf8, UCS_UTF8);
-    ASSERT_TRUE(result);
+    size_t result = ucs_encode_bytes(utf16_le_encoded_test_data, UTF16_LEN, UCS_UTF16 | UCS_LE, &utf8, UCS_UTF8);
+    ASSERT_EQ(3, result);
     
     result = result && ASSERT_EQ(UTF8_LEN, utf8.size);
     result = result && ASSERT_EQ(0, memcmp(utf8.data, utf8_encoded_test_data, UTF8_LEN));
@@ -60,8 +59,8 @@ static bool test_utf16_le_to_utf8(void) {
 
 static bool test_utf8_to_utf16_le(void) {
     scf_buffer utf16 = scf_buffer_create(&op, 0);
-    bool result = ucs_encode_bytes(utf8_encoded_test_data, UTF8_LEN, UCS_UTF8, &utf16, UCS_UTF16 | UCS_LE);
-    ASSERT_TRUE(result);
+    size_t result = ucs_encode_bytes(utf8_encoded_test_data, UTF8_LEN, UCS_UTF8, &utf16, UCS_UTF16 | UCS_LE);
+    ASSERT_EQ(3, result);
     
     result = result && ASSERT_EQ(8, utf16.size);
     result = result && ASSERT_EQ(0, memcmp(utf16.data, utf16_le_encoded_test_data, UTF16_LEN));
