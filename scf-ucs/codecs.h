@@ -26,9 +26,13 @@ typedef enum {
     ,UCS_ENCODING_MASK = UCS_BOM - 1
 } ucs_encoding;
 
-ucs_codepoint ucs_utf8_get(const unsigned char *current, const unsigned char *end, size_t *bytecount);
+ucs_codepoint ucs_utf8_to_codepoint(ucs_utf8_char ch);
 
-void ucs_utf8_put(ucs_codepoint codepoint, unsigned char *target, const unsigned char *end, size_t *bytecount);
+ucs_utf8_char ucs_codepoint_to_utf8(ucs_codepoint cp);
+
+ucs_utf8_char ucs_utf8_get(const scf_buffer *buf, size_t *index);
+
+bool ucs_utf8_append(scf_buffer *buf, ucs_utf8_char ch);
 
 
 /*------------------------------------------------------------
@@ -40,19 +44,12 @@ void ucs_utf8_put(ucs_codepoint codepoint, unsigned char *target, const unsigned
  * of the target buffer are left unchanged, though the
  * capacity may have increased).
  -----------------------------------------------------------*/
-size_t ucs_encode_bytes(
-                const void *bytes,
-                size_t length,
-                ucs_encoding source_encoding,
-                scf_buffer *target,
-                ucs_encoding target_encoding);
-
 size_t ucs_encode(
-                scf_buffer *source,
-                size_t source_offset,
-                ucs_encoding source_encoding,
-                scf_buffer *target,
-                ucs_encoding target_encoding);
+                  const scf_buffer *source,
+                  size_t offset,
+                  ucs_encoding source_encoding,
+                  scf_buffer *target,
+                  ucs_encoding target_encoding);
 
 inline size_t ucs_get_utf8_bytecount(unsigned char first_byte) {
     if (first_byte <= 0x7F) return 1;

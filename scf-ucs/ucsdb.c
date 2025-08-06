@@ -3,7 +3,7 @@
 #include "hash.h"
 #include "mmgt.h"
 
-const int32_t UCS_INVALID = -1;
+const uint32_t UCS_INVALID = 0xFFFFFFFF;
 
 static scf_dictionary ucsdb;
 
@@ -14,7 +14,7 @@ static SCF_OPERATION(op);
 static size_t hashfunc(scf_datum d) {
     int ch = (int) d.i_value;
     int result =  ((ch >> 16) ^ ch);
-    result = result ^ (result << 8);
+    result ^= (result << 8);
     return result;
 }
 

@@ -59,6 +59,10 @@ static void remove_block(scf_mem_block *block) {
     }
 }
 
+inline static void check_not_pinned(const scf_buffer *buffer) {
+    if (buffer->pinned) scf_raise_error(SCF_LOGIC_ERROR, "Attempting to resize pinned buffer");
+}
+
 void *scf_alloc(scf_operation *operation, size_t required) {
     return scf_alloc_with_cleanup(operation, NULL, required);
 }
@@ -113,17 +117,24 @@ static void ensure_capacity(scf_buffer *buffer, size_t required) {
 
 scf_buffer scf_buffer_create(scf_operation *operation, size_t initial_capacity) {
     if (initial_capacity < MIN_CAPACITY) initial_capacity = MIN_CAPACITY;
-    scf_buffer result = {0, initial_capacity, scf_alloc(operation, initial_capacity)};
+    scf_buffer result = {0, initial_capacity, false, scf_alloc(operation, initial_capacity)};
+    return result;
+}
+
+scf_buffer scf_buffer_wrap(void *data, size_t length) {
+    scf_buffer result = {length, length, true, data};
     return result;
 }
 
 void scf_buffer_append_bytes(scf_buffer *buffer, const void *bytes_to_append, size_t byte_count) {
+    check_not_pinned(buffer);
     ensure_capacity(buffer, buffer->size + byte_count);
     memcpy(buffer->data + buffer->size, bytes_to_append, byte_count);
     buffer->size += byte_count;
 }
 
 void scf_buffer_insert_bytes(scf_buffer *buffer, const void *bytes_to_insert, size_t before, size_t byte_count) {
+    check_not_pinned(buffer);
     if (before > buffer->size) scf_raise_error(SCF_BAD_INDEX, "Invalid index");
 
     if (byte_count == 0) return;
@@ -135,6 +146,7 @@ void scf_buffer_insert_bytes(scf_buffer *buffer, const void *bytes_to_insert, si
 }
 
 void scf_buffer_remove(scf_buffer *buffer, size_t starting_from, size_t byte_count) {
+    check_not_pinned(buffer);
     if (starting_from + byte_count > buffer->size) scf_raise_error(SCF_BAD_INDEX, "Attempting to remove more data than is present!");
 
     if (byte_count == 0) return;

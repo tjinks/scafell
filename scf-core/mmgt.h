@@ -9,6 +9,7 @@
 #define mmgt_h
 
 #include <stdlib.h>
+#include <stdbool.h>
 
 typedef void (*scf_exhaustion_handler)(void);
 typedef void (*scf_cleanup_func)(void *);
@@ -33,6 +34,7 @@ typedef struct scf_operation {
 typedef struct {
     size_t size;
     size_t capacity;
+    bool pinned;
     unsigned char *data;
 } scf_buffer;
 
@@ -43,6 +45,15 @@ void scf_complete(scf_operation *operation);
 scf_operation *scf_get_operation(const void *p);
 
 scf_buffer scf_buffer_create(scf_operation *operation, size_t initial_capacity);
+
+/*-------------------------------------------------------------------
+ * Wraps an scf_buffer around an existing chunk of memory. The
+ * buffer is flagged as 'pinned', meaning that it's data pointer
+ * may not change (and by implication that the buffer should not be
+ * resized).
+ ------------------------------------------------------------------*/
+scf_buffer scf_buffer_wrap(void *data, size_t length);
+
 void scf_buffer_append_bytes(scf_buffer *buffer, const void *bytes_to_append, size_t byte_count);
 void scf_buffer_insert_bytes(scf_buffer *buffer, const void *bytes_to_insert, size_t before, size_t byte_count);
 void scf_buffer_remove(scf_buffer *buffer, size_t starting_from, size_t byte_count);

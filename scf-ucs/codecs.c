@@ -19,9 +19,9 @@ typedef struct {
     size_t bytecount;
 } encoded_char;
 
-typedef decoded_char (*decoder)(const unsigned char *, const unsigned char *);
+typedef ucs_utf8_char (*extractor)(const scf_buffer *, size_t *index);
 
-typedef encoded_char (*encoder)(ucs_codepoint);
+typedef bool (*appender)(scf_buffer *, ucs_utf8_char);
 
 /*-----------------------------------
  * UTF8-specific logic
@@ -30,39 +30,72 @@ typedef encoded_char (*encoder)(ucs_codepoint);
 // Declared inline - see codecs.h
 extern size_t ucs_get_utf8_bytecount(unsigned char first_byte);
 
-ucs_codepoint ucs_utf8_get(const unsigned char *current, const unsigned char *end, size_t *bytecount) {
-    if (current == end) {
-        *bytecount = 0;
-        return UCS_INVALID;
-    }
-    
-    unsigned char first_byte = current[0];
-    *bytecount = ucs_get_utf8_bytecount(first_byte);
-
-    if (*bytecount > end - current) {
-        *bytecount = 0;
-        return UCS_INVALID;
-    }
-    
+ucs_codepoint ucs_utf8_to_codepoint(ucs_utf8_char ch) {
     ucs_codepoint result;
-    switch (*bytecount) {
-        case 1:
-            result = first_byte;
-            break;
-        case 2:
-            result = first_byte & 0x3F;
-            result = (result << 6) + (current[1] & 0x7F);
-            break;
-        case 3:
-            result = first_byte & 0x1F;
-            result = (result << 6) + (current[1] & 0x7F);
-            result = (result << 6) + (current[2] & 0x7F);
-            break;
+    if (ch < 0xFF) {
+        result = ch;
+    } else if (ch < 0xFFFF) {
+        result = ((ch & 0x1F00) >> 2) | (ch & 0x3F);
+    } else if (ch <= 0xFFFFFF) {
+        result = ((ch & 0xF0000) >> 4) | ((ch & 0x3F00) >> 2) | (ch & 0x3F);
+    } else {
+        result = ((ch & 0x7000000) >> 6) | ((ch & 0x3F0000) >> 4) | ((ch & 0x3F00) >> 2) | (ch & 0x3F);
+    }
+    
+    return result;
+}
+
+ucs_utf8_char ucs_codepoint_to_utf8(ucs_codepoint cp) {
+    if (cp <= 0x7F) {
+        return cp;
+    }
+    
+    ucs_utf8_char result = cp & 0x3F;
+    if (cp <= 0x7FF) {
+        result |= ((cp & 0x7C0) << 2);
+        result |= 0xC080;
+    } else if (cp <= 0xFFFF) {
+        result |= ((cp & 0xFC0) << 2);
+        result |= ((cp & 0xF000) << 4);
+        result |= 0xE08080;
+    } else {
+        result |= ((cp & 0xFC0) << 2);
+        result |= ((cp & 0x3F000) << 4);
+        result |= ((cp & 0x1C0000) << 6);
+        result |= 0xF0808080;
+    }
+    
+    return result;
+}
+
+ucs_utf8_char ucs_utf8_get(const scf_buffer *buf, size_t *index) {
+    if (*index >= buf->size) {
+        return UCS_INVALID;
+    }
+    
+    unsigned const char *current = buf->data + *index;
+    unsigned char first_byte = current[0];
+    size_t bytecount = ucs_get_utf8_bytecount(first_byte);
+
+    if (*index + bytecount > buf->size) {
+        bytecount = 0;
+        return UCS_INVALID;
+    }
+    
+    ucs_utf8_char result = 0;
+    switch (bytecount) {
         case 4:
-            result = first_byte & 0xF;
-            result = (result << 6) + (current[1] & 0x7F);
-            result = (result << 6) + (current[2] & 0x7F);
-            result = (result << 6) + (current[3] & 0x7F);
+            result += ((ucs_utf8_char)current[0] << 24);
+            current++;
+        case 3:
+            result += ((ucs_utf8_char)current[0] << 16);
+            current++;
+        case 2:
+            result += ((ucs_utf8_char)current[0] << 8);
+            current++;
+        case 1:
+            result += (ucs_utf8_char)current[0];
+            *index += bytecount;
             break;
         default:
             result = UCS_INVALID;
@@ -74,63 +107,35 @@ ucs_codepoint ucs_utf8_get(const unsigned char *current, const unsigned char *en
 
 }
 
-/*
- * Decode a UTF8 character from a byte array, starting at the specified address.
- */
-static decoded_char decode_utf8(const unsigned char *s, const unsigned char *end) {
-    const unsigned char *original = s;
-    decoded_char result;
-    result.codepoint = ucs_utf8_get(s, end, &result.bytecount);
-    return result;
-}
-
-inline static unsigned char shift_and_mask(ucs_codepoint cp, int shift, unsigned char mask) {
-    return (unsigned char)((cp >> shift) & mask);
-}
-
-void ucs_utf8_put(ucs_codepoint codepoint, unsigned char *target, const unsigned char *end, size_t *bytecount) {
-    if (codepoint <= 0x7F) {
-        *bytecount = 1;
-    } else if (codepoint > 0xFFFF) {
-        if (codepoint > 0x10FFFF) {
-            *bytecount = 0;
-        } else {
-            *bytecount = 4;
-        }
-    } else if (codepoint > 0x7FF) {
-        *bytecount = 3;
+bool ucs_utf8_append(scf_buffer *buf, ucs_utf8_char ch) {
+    size_t bytecount;
+    if (ch < 0xFF) {
+        bytecount = 1;
+    } else if (ch < 0xFFFF) {
+        bytecount = 2;
+    } else if (ch < 0xFFFFFF) {
+        bytecount = 3;
     } else {
-        *bytecount = 2;
+        bytecount = 4;
     }
     
-    if (end - target < *bytecount) *bytecount = 0;
-    
-    switch (*bytecount) {
-        case 1:
-            target[0] = (unsigned char)codepoint;
-            break;
-        case 2:
-            target[0] = 0xC0 | shift_and_mask(codepoint, 6, 0xFF);
-            target[1] = 0x80 | shift_and_mask(codepoint, 0, 0x3F);
-            break;
-        case 3:
-            target[0] = 0xE0 | shift_and_mask(codepoint, 12, 0xFF);
-            target[1] = 0x80 | shift_and_mask(codepoint, 6, 0x3F);
-            target[2] = 0x80 | shift_and_mask(codepoint, 0, 0x3F);
-            break;
+    unsigned char data[4];
+    switch (bytecount) {
         case 4:
-            target[0] = 0xF0 | shift_and_mask(codepoint, 18, 0xFF);
-            target[1] = 0x80 | shift_and_mask(codepoint, 12, 0x3F);
-            target[2] = 0x80 | shift_and_mask(codepoint, 6, 0x3F);
-            target[3] = 0x80 | shift_and_mask(codepoint, 0, 0x3F);
+            data[0] = ch >> 24;
+        case 3:
+            data[1] = ch >> 16;
+        case 2:
+            data[2] = ch >> 8;
+        case 1:
+            data[3] = ch;
+            scf_buffer_append_bytes(buf, &data[4 - bytecount], bytecount);
             break;
+        default:
+            return false;
     }
-}
-
-static encoded_char encode_utf8(ucs_codepoint cp) {
-    encoded_char result;
-    ucs_utf8_put(cp, result.bytes, result.bytes + sizeof(result.bytes), &result.bytecount);
-    return result;
+    
+    return true;
 }
 
 /*-----------------------------------
@@ -233,34 +238,39 @@ static encoded_char encode_utf16_be(ucs_codepoint cp) {
 /*-----------------------------------
  * Logic common to all encodings
  *---------------------------------*/
-static decoder get_decoder(ucs_encoding enc) {
+static extractor get_extractor(ucs_encoding enc) {
     switch ((int)enc) {
         case UCS_UTF8:
-            return decode_utf8;
+            return ucs_utf8_get;
+            /*
         case UCS_UTF16:
         case UCS_UTF16 | UCS_LE:
             return decode_utf16_le;
         case UCS_UTF16 | UCS_BE:
             return decode_utf16_be;
+             */
         default:
             scf_raise_error(SCF_INVALID_ENCODING, "Unsupported encoding");
     }
 }
 
-static encoder get_encoder(ucs_encoding enc) {
+static appender get_appender(ucs_encoding enc) {
     switch ((int)enc) {
         case UCS_UTF8:
-            return encode_utf8;
+            return ucs_utf8_append;
+            /*
         case UCS_UTF16:
         case UCS_UTF16 | UCS_LE:
             return encode_utf16_le;
         case UCS_UTF16 | UCS_BE:
             return encode_utf16_be;
+             */
         default:
             scf_raise_error(SCF_INVALID_ENCODING, "Unsupported encoding");
     }
 }
-                                  
+   
+/*
 size_t ucs_encode(
                 scf_buffer *source,
                 size_t source_offset,
@@ -269,26 +279,23 @@ size_t ucs_encode(
                 ucs_encoding target_encoding) {
     return ucs_encode_bytes(source->data, source->size - source_offset, source_encoding, target, target_encoding);
 }
+*/
 
-size_t ucs_encode_bytes(
-                      const void *bytes,
-                      size_t length,
-                      ucs_encoding source_encoding,
-                      scf_buffer *target,
-                      ucs_encoding target_encoding) {
-    decoder dec = get_decoder(source_encoding);
-    encoder enc = get_encoder(target_encoding);
+size_t ucs_encode(
+                  const scf_buffer *source,
+                  size_t offset,
+                  ucs_encoding source_encoding,
+                  scf_buffer *target,
+                  ucs_encoding target_encoding) {
+    extractor extract = get_extractor(source_encoding);
+    appender append = get_appender(target_encoding);
     size_t original_target_size = target->size;
     size_t charcount = 0;
-    const unsigned char *s = bytes;
-    const unsigned char *end = s + length;
-    while (s != end) {
-        decoded_char decoded = dec(s, end);
-        if (decoded.bytecount == 0) goto encoding_failed;
-        encoded_char encoded = enc(decoded.codepoint);
-        if (encoded.bytecount == 0) goto encoding_failed;
-        scf_buffer_append_bytes(target, encoded.bytes, encoded.bytecount);
-        s += decoded.bytecount;
+    size_t index = offset;
+    while (index < source->size) {
+        ucs_utf8_char ch = extract(source, &index);
+        if (ch == UCS_INVALID) goto encoding_failed;
+        if (!append(target, ch)) goto encoding_failed;
         charcount++;
     }
     

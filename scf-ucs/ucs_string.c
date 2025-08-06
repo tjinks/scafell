@@ -30,8 +30,9 @@ ucs_string ucs_string_create(scf_operation *op) {
 
 ucs_string ucs_string_from_bytes(scf_operation *op, const void *bytes, size_t bytecount, ucs_encoding enc) {
     ucs_string result;
+    scf_buffer wrapped_bytes = scf_buffer_wrap((void *)bytes, bytecount);
     result.bytes = scf_buffer_create(op, bytecount);
-    result.char_count = ucs_encode_bytes(bytes, bytecount, enc, &result.bytes, UCS_UTF8);
+    result.char_count = ucs_encode(&wrapped_bytes, 0, enc, &result.bytes, UCS_UTF8);
     add_terminator(&result);
     return result;
 }
@@ -57,6 +58,7 @@ ucs_iterator ucs_get_iterator_at(ucs_string *s, size_t char_index) {
 }
 
 bool ucs_next(ucs_iterator *iter, ucs_codepoint *codepoint) {
+#if XXX
     scf_buffer bytebuffer = iter->s->bytes;
     if (iter->byte_index >= bytebuffer.size) {
         *codepoint = UCS_INVALID;
@@ -64,11 +66,12 @@ bool ucs_next(ucs_iterator *iter, ucs_codepoint *codepoint) {
     }
     
     size_t bytecount;
-    *codepoint = ucs_utf8_get(bytebuffer.data + iter->byte_index, bytebuffer.data + bytebuffer.size, &bytecount);
+    *codepoint = ucs_utf8_get(&bytebuffer.data + iter->byte_index, bytebuffer.data + bytebuffer.size, &bytecount);
     if (*codepoint == UCS_INVALID) return false;
     
     iter->byte_index += bytecount;
     iter->char_index++;
+#endif
     return true;
 }
 

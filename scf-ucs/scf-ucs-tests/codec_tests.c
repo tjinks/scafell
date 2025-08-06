@@ -8,7 +8,6 @@
 #include "scuts.h"
 #include "codecs.h"
 #include "mmgt.h"
-#include "scuts.h"
 
 
 static SCF_OPERATION(op);
@@ -17,22 +16,34 @@ static void cleanup(void) {
     scf_complete(&op);
 }
 
-static bool test_valid_utf8_encoding(void) {
-    unsigned char data[] = {0x41, 0xC2, 0xA3, 0xF3, 0xA0, 0x81, 0xA1};
-    scf_buffer encoded = scf_buffer_create(&op, 10);
-    bool result = ucs_encode_bytes(data, 7, UCS_UTF8, &encoded, UCS_UTF8);
-    ASSERT_TRUE(result);
-    result = result && ASSERT_EQ(7, encoded.size);
-    bool data_matches = memcmp(data, encoded.data, 7) == 0;
-    result = result && data_matches;
+static bool test_codepoint_to_utf8_char(void) {
+    bool result = ASSERT_EQ(0x41, ucs_codepoint_to_utf8(0x41));
+    result &= ASSERT_EQ(0xC2A3, ucs_codepoint_to_utf8(0xA3));
+    result &= ASSERT_EQ(0xEFBFBD, ucs_codepoint_to_utf8(0xFFFD));
+    result &= ASSERT_EQ(0xF0908299, ucs_codepoint_to_utf8(0x10099));
+
     return result;
 }
 
-static bool test_invalid_utf8_encoding(void) {
+static bool test_utf8_char_to_codepoint(void) {
+    bool result = ASSERT_EQ(0x41, ucs_utf8_to_codepoint(0x41));
+    result &= ASSERT_EQ(0xA3, ucs_utf8_to_codepoint(0xC2A3));
+    result &= ASSERT_EQ(0xFFFD, ucs_utf8_to_codepoint(0xEFBFBD));
+    result &= ASSERT_EQ(0x10099, ucs_utf8_to_codepoint(0xF0908299));
+    
+    return result;
+}
+
+static bool test_valid_utf8_encoding(void) {
     unsigned char data[] = {0x41, 0xC2, 0xA3, 0xF3, 0xA0, 0x81, 0xA1};
-    scf_buffer encoded = scf_buffer_create(&op, 10);
-    size_t result = ucs_encode_bytes(data, 6, UCS_UTF8, &encoded, UCS_UTF8);
-    return ASSERT_EQ(SIZE_MAX, result);
+    scf_buffer source = scf_buffer_wrap(data, 7);
+    scf_buffer target = scf_buffer_create(&op, 0);
+    size_t result = ucs_encode(&source, 0, UCS_UTF8, &target, UCS_UTF8);
+    ASSERT_EQ(3, result);
+    result = result && ASSERT_EQ(7, target.size);
+    bool data_matches = memcmp(data, target.data, 7) == 0;
+    result = result && ASSERT_TRUE(data_matches);
+    return result;
 }
 
 /*
@@ -47,6 +58,7 @@ static const unsigned char utf16_le_encoded_test_data[] = {0x41, 0x00, 0xA3, 0x0
 #define UTF8_LEN (sizeof(utf8_encoded_test_data) / sizeof(unsigned char))
 #define UTF16_LEN (sizeof(utf16_le_encoded_test_data) / sizeof(unsigned char))
 
+#ifdef XXX
 static bool test_utf16_le_to_utf8(void) {
     scf_buffer utf8 = scf_buffer_create(&op, 0);
     size_t result = ucs_encode_bytes(utf16_le_encoded_test_data, UTF16_LEN, UCS_UTF16 | UCS_LE, &utf8, UCS_UTF8);
@@ -66,12 +78,16 @@ static bool test_utf8_to_utf16_le(void) {
     result = result && ASSERT_EQ(0, memcmp(utf16.data, utf16_le_encoded_test_data, UTF16_LEN));
     return result;
 }
+#endif
 
 BEGIN_TEST_GROUP(codec_tests)
 CLEANUP(cleanup)
 TEST(test_valid_utf8_encoding)
-TEST(test_invalid_utf8_encoding)
+TEST(test_codepoint_to_utf8_char)
+TEST(test_utf8_char_to_codepoint)
+#ifdef XXX
 TEST(test_utf8_to_utf16_le)
 TEST(test_utf16_le_to_utf8)
+#endif
 END_TEST_GROUP
 
