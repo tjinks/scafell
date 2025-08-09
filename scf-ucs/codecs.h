@@ -12,7 +12,7 @@
 #include <stdint.h>
 
 #include "mmgt.h"
-#include "ucsdb.h"
+#include "ucs_db.h"
 
 typedef enum {
     UCS_OPAQUE = 0

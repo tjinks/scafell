@@ -6,7 +6,7 @@
 //
 
 #include "scuts.h"
-#include "ucsdb.h"
+#include "ucs_db.h"
 
 static void init(void) {
     ucs_dbinit();

@@ -8,7 +8,7 @@
 #ifndef ucs_string_h
 #define ucs_string_h
 
-#include "ucsdb.c"
+#include "ucs_db.c"
 #include "mmgt.h"
 #include "codecs.h"
 

@@ -1,6 +1,6 @@
 /* Warning - this file was built by a tool */
 
-#include "ucsdb.h"
+#include "ucs_db.h"
 
 static ucs_details unicode_data[] = {
 {0x0, 0x0000, UCS_OTHER, -1, 0x0, 0x0, 0x0}
