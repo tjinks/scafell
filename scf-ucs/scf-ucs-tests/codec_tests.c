@@ -58,36 +58,34 @@ static const unsigned char utf16_le_encoded_test_data[] = {0x41, 0x00, 0xA3, 0x0
 #define UTF8_LEN (sizeof(utf8_encoded_test_data) / sizeof(unsigned char))
 #define UTF16_LEN (sizeof(utf16_le_encoded_test_data) / sizeof(unsigned char))
 
-#ifdef XXX
 static bool test_utf16_le_to_utf8(void) {
-    scf_buffer utf8 = scf_buffer_create(&op, 0);
-    size_t result = ucs_encode_bytes(utf16_le_encoded_test_data, UTF16_LEN, UCS_UTF16 | UCS_LE, &utf8, UCS_UTF8);
+    scf_buffer source = scf_buffer_wrap((void *)utf16_le_encoded_test_data, UTF16_LEN);
+    scf_buffer target = scf_buffer_create(&op, 0);
+    size_t result = ucs_encode(&source, 0, UCS_UTF16 | UCS_LE, &target, UCS_UTF8);
     ASSERT_EQ(3, result);
     
-    result = result && ASSERT_EQ(UTF8_LEN, utf8.size);
-    result = result && ASSERT_EQ(0, memcmp(utf8.data, utf8_encoded_test_data, UTF8_LEN));
+    result = result && ASSERT_EQ(UTF8_LEN, target.size);
+    result = result && ASSERT_EQ(0, memcmp(target.data, utf8_encoded_test_data, UTF8_LEN));
     return result;
 }
 
 static bool test_utf8_to_utf16_le(void) {
-    scf_buffer utf16 = scf_buffer_create(&op, 0);
-    size_t result = ucs_encode_bytes(utf8_encoded_test_data, UTF8_LEN, UCS_UTF8, &utf16, UCS_UTF16 | UCS_LE);
+    scf_buffer source = scf_buffer_wrap((void *)utf8_encoded_test_data, UTF8_LEN);
+    scf_buffer target = scf_buffer_create(&op, 0);
+    size_t result = ucs_encode(&source, 0, UCS_UTF8, &target, UCS_UTF16 | UCS_LE);
     ASSERT_EQ(3, result);
     
-    result = result && ASSERT_EQ(8, utf16.size);
-    result = result && ASSERT_EQ(0, memcmp(utf16.data, utf16_le_encoded_test_data, UTF16_LEN));
+    result = result && ASSERT_EQ(UTF16_LEN, target.size);
+    result = result && ASSERT_EQ(0, memcmp(target.data, utf16_le_encoded_test_data, UTF16_LEN));
     return result;
 }
-#endif
 
 BEGIN_TEST_GROUP(codec_tests)
 CLEANUP(cleanup)
 TEST(test_valid_utf8_encoding)
 TEST(test_codepoint_to_utf8_char)
 TEST(test_utf8_char_to_codepoint)
-#ifdef XXX
 TEST(test_utf8_to_utf16_le)
 TEST(test_utf16_le_to_utf8)
-#endif
 END_TEST_GROUP
 

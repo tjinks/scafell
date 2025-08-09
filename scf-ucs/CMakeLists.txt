@@ -1,6 +1,6 @@
 add_library(scf-ucs
 	unicode_data.h
-	ucsdb.c ucsdb.h
+	ucs_db.c ucs_db.h
     ucs_string.c ucs_string.h
     codecs.c codecs.h
  )

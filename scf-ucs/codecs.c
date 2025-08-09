@@ -172,26 +172,22 @@ static inline bool is_low_surrogate(uint16_t unit) {
     return (unit >= first_low_surrogate) && (unit <= last_low_surrogate);
 }
 
-static decoded_char decode_utf16(const unsigned char *s, const unsigned char *end, bool le) {
-    decoded_char result;
-    if (end - s < 2)
+static ucs_codepoint utf16_get_codepoint(const scf_buffer *buf, size_t *index, bool le) {
+    ucs_codepoint result = UCS_INVALID;
+    if (*index + 2 <= buf->size)
     {
-        result.bytecount = 0;
-        result.codepoint = 0;
-        return result;
-    }
-    
-    uint16_t first_unit = get_unit(s, le);
-    result.codepoint = first_unit;
-    result.bytecount = 2;
-    
-    if (is_high_surrogate(first_unit)) {
-        if (end - s > 2) {
-            uint16_t second_unit = get_unit(s + 2, le);
-            if (is_low_surrogate(second_unit)) {
-                result.codepoint = ((first_unit - first_high_surrogate) << 10) + second_unit - first_low_surrogate;
-                result.codepoint += 0x10000;
-                result.bytecount = 4;
+        uint16_t first_unit = get_unit(buf->data + *index, le);
+        result = first_unit;
+        *index += 2;
+        
+        if (is_high_surrogate(first_unit)) {
+            if (*index + 2 <= buf->size) {
+                uint16_t second_unit = get_unit(buf->data + *index, le);
+                if (is_low_surrogate(second_unit)) {
+                    result = ((first_unit - first_high_surrogate) << 10) + second_unit - first_low_surrogate;
+                    result += 0x10000;
+                    *index += 2;
+                }
             }
         }
     }
@@ -199,40 +195,46 @@ static decoded_char decode_utf16(const unsigned char *s, const unsigned char *en
     return result;
 }
 
-static encoded_char encode_utf16(ucs_codepoint cp, bool le) {
-    encoded_char result;
+static ucs_utf8_char utf16le_get(const scf_buffer *buf, size_t *index) {
+    ucs_codepoint cp = utf16_get_codepoint(buf, index, true);
+    return cp == UCS_INVALID ? cp : ucs_codepoint_to_utf8(cp);
+}
+
+static ucs_utf8_char utf16be_get(const scf_buffer *buf, size_t *index) {
+    ucs_codepoint cp = utf16_get_codepoint(buf, index, false);
+    return cp == UCS_INVALID ? cp : ucs_codepoint_to_utf8(cp);
+}
+
+//bool ucs_utf8_append(scf_buffer *buf, ucs_utf8_char ch) {
+
+static bool utf16_append_codepoint(scf_buffer *buf, ucs_codepoint cp, bool le) {
+    unsigned char bytes[4];
+    size_t bytecount = 0;
     if (cp <= 0xFFFF) {
-        put_unit(cp, result.bytes, le);
-        result.bytecount = 2;
+        put_unit(cp, bytes, le);
+        bytecount = 2;
     } else {
-        if (cp > 0x10FFFF) {
-            result.bytecount = 0;
-        } else {
+        if (cp <= 0x10FFFF) {
             uint16_t first_unit = ((cp - 0x10000) >> 10) + first_high_surrogate;
             uint16_t second_unit = (cp & 0x3FF) + first_low_surrogate;
-            put_unit(first_unit, result.bytes, le);
-            put_unit(second_unit, result.bytes + 2, le);
-            result.bytecount = 4;
+            put_unit(first_unit, bytes, le);
+            put_unit(second_unit, bytes + 2, le);
+            bytecount = 4;
         }
     }
     
-    return result;
+    scf_buffer_append_bytes(buf, bytes, bytecount);
+    return bytecount != 0;
 }
 
-static decoded_char decode_utf16_le(const unsigned char *s, const unsigned char *end) {
-    return decode_utf16(s, end, true);
+static bool utf16le_append(scf_buffer *buf, ucs_utf8_char ch) {
+    ucs_codepoint cp = ucs_utf8_to_codepoint(ch);
+    return utf16_append_codepoint(buf, cp, true);
 }
 
-static decoded_char decode_utf16_be(const unsigned char *s, const unsigned char *end) {
-    return decode_utf16(s, end, false);
-}
-
-static encoded_char encode_utf16_le(ucs_codepoint cp) {
-    return encode_utf16(cp, true);
-}
-
-static encoded_char encode_utf16_be(ucs_codepoint cp) {
-    return encode_utf16(cp, false);
+static bool utf16be_append(scf_buffer *buf, ucs_utf8_char ch) {
+    ucs_codepoint cp = ucs_utf8_to_codepoint(ch);
+    return utf16_append_codepoint(buf, cp, false);
 }
 
 /*-----------------------------------
@@ -242,13 +244,11 @@ static extractor get_extractor(ucs_encoding enc) {
     switch ((int)enc) {
         case UCS_UTF8:
             return ucs_utf8_get;
-            /*
         case UCS_UTF16:
         case UCS_UTF16 | UCS_LE:
-            return decode_utf16_le;
+            return utf16le_get;
         case UCS_UTF16 | UCS_BE:
-            return decode_utf16_be;
-             */
+            return utf16be_get;
         default:
             scf_raise_error(SCF_INVALID_ENCODING, "Unsupported encoding");
     }
@@ -258,29 +258,16 @@ static appender get_appender(ucs_encoding enc) {
     switch ((int)enc) {
         case UCS_UTF8:
             return ucs_utf8_append;
-            /*
         case UCS_UTF16:
         case UCS_UTF16 | UCS_LE:
-            return encode_utf16_le;
+            return utf16le_append;
         case UCS_UTF16 | UCS_BE:
-            return encode_utf16_be;
-             */
+            return utf16be_append;
         default:
             scf_raise_error(SCF_INVALID_ENCODING, "Unsupported encoding");
     }
 }
    
-/*
-size_t ucs_encode(
-                scf_buffer *source,
-                size_t source_offset,
-                ucs_encoding source_encoding,
-                scf_buffer *target,
-                ucs_encoding target_encoding) {
-    return ucs_encode_bytes(source->data, source->size - source_offset, source_encoding, target, target_encoding);
-}
-*/
-
 size_t ucs_encode(
                   const scf_buffer *source,
                   size_t offset,
