@@ -51,24 +51,4 @@ size_t ucs_encode(
                   scf_buffer *target,
                   ucs_encoding target_encoding);
 
-inline size_t ucs_get_utf8_bytecount(unsigned char first_byte) {
-    if (first_byte <= 0x7F) return 1;
-    
-    unsigned char disc = (first_byte >> 3) & 0x1F;
-    switch (disc) {
-        case 0x18:
-        case 0x19:
-        case 0x1A:
-        case 0x1B:
-            return 2;
-        case 0x1C:
-        case 0x1D:
-            return 3;
-        case 0x1E:
-            return 4;
-        default:
-            return 0;
-    }
-}
-
 #endif /* codecs_h */

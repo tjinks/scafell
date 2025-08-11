@@ -2,6 +2,7 @@ add_executable(scf-ucs-tests
 	main.c
     ucsdb_tests.c
     codec_tests.c
+    ucs_string_tests.c
  )
 
 target_link_libraries(scf-ucs-tests PUBLIC compiler_flags)

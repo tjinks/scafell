@@ -8,7 +8,7 @@
 #ifndef ucs_string_h
 #define ucs_string_h
 
-#include "ucs_db.c"
+#include "ucs_db.h"
 #include "mmgt.h"
 #include "codecs.h"
 
@@ -42,11 +42,17 @@ ucs_string ucs_string_create(scf_operation *op);
 
 ucs_string ucs_string_from_bytes(scf_operation *op, const void *bytes, size_t bytecount, ucs_encoding enc);
 
+ucs_string ucs_string_copy(const ucs_string *s);
+
+void ucs_string_append(ucs_string *s1, const ucs_string *s2);
+
+ucs_string ucs_substring(const ucs_iterator *from, size_t length);
+
 ucs_iterator ucs_get_iterator(ucs_string *s);
 
 ucs_iterator ucs_get_iterator_at(ucs_string *s, size_t char_index);
 
-bool ucs_next(ucs_iterator *iter, ucs_codepoint *codepoint);
+bool ucs_next(ucs_iterator *iter, ucs_utf8_char *ch);
 
 inline bool ucs_at_end(const ucs_iterator *iter) {
     return iter->byte_index == iter->s->bytes.size;

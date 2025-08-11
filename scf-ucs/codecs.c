@@ -9,16 +9,6 @@
 #include "ucs_db.h"
 #include "err_handling.h"
 
-typedef struct {
-    ucs_codepoint codepoint;
-    size_t bytecount;
-} decoded_char;
-
-typedef struct {
-    unsigned char bytes[4];
-    size_t bytecount;
-} encoded_char;
-
 typedef ucs_utf8_char (*extractor)(const scf_buffer *, size_t *index);
 
 typedef bool (*appender)(scf_buffer *, ucs_utf8_char);
@@ -28,7 +18,7 @@ typedef bool (*appender)(scf_buffer *, ucs_utf8_char);
  *---------------------------------*/
 
 // Declared inline - see codecs.h
-extern size_t ucs_get_utf8_bytecount(unsigned char first_byte);
+//extern size_t ucs_get_utf8_bytecount(unsigned char first_byte);
 
 ucs_codepoint ucs_utf8_to_codepoint(ucs_utf8_char ch) {
     ucs_codepoint result;
@@ -69,42 +59,56 @@ ucs_utf8_char ucs_codepoint_to_utf8(ucs_codepoint cp) {
 }
 
 ucs_utf8_char ucs_utf8_get(const scf_buffer *buf, size_t *index) {
+    
     if (*index >= buf->size) {
         return UCS_INVALID;
     }
     
     unsigned const char *current = buf->data + *index;
     unsigned char first_byte = current[0];
-    size_t bytecount = ucs_get_utf8_bytecount(first_byte);
-
-    if (*index + bytecount > buf->size) {
-        bytecount = 0;
-        return UCS_INVALID;
+    if (first_byte <= 0x7F) {
+        *index += 1;
+        return first_byte;
     }
     
-    ucs_utf8_char result = 0;
-    switch (bytecount) {
-        case 4:
-            result += ((ucs_utf8_char)current[0] << 24);
-            current++;
-        case 3:
-            result += ((ucs_utf8_char)current[0] << 16);
-            current++;
-        case 2:
-            result += ((ucs_utf8_char)current[0] << 8);
-            current++;
-        case 1:
-            result += (ucs_utf8_char)current[0];
-            *index += bytecount;
+    unsigned char disc = (first_byte >> 3) & 0x1F;
+    ucs_utf8_char result = UCS_INVALID;
+    
+    switch (disc) {
+        case 0x18:
+        case 0x19:
+        case 0x1A:
+        case 0x1B:
+            if (*index + 2 <= buf->size) {
+                result = ((ucs_utf8_char)current[0] << 8) | current[1];
+                *index += 2;
+            }
+            
+            break;
+        case 0x1C:
+        case 0x1D:
+            if (*index + 3 <= buf->size) {
+                result = ((ucs_utf8_char)current[0] << 16) | ((ucs_utf8_char)current[1] << 8) | current[2];
+                *index += 3;
+            }
+            
+            break;
+        case 0x1E:
+            if (*index + 4 <= buf->size) {
+                result = ((ucs_utf8_char)current[0] << 24);
+                result |= ((ucs_utf8_char)current[1] << 16);
+                result |= ((ucs_utf8_char)current[2] << 8);
+                result |= current[3];
+                
+                *index += 4;
+            }
+            
             break;
         default:
-            result = UCS_INVALID;
-            bytecount = 0;
             break;
     }
     
     return result;
-
 }
 
 bool ucs_utf8_append(scf_buffer *buf, ucs_utf8_char ch) {
@@ -204,8 +208,6 @@ static ucs_utf8_char utf16be_get(const scf_buffer *buf, size_t *index) {
     ucs_codepoint cp = utf16_get_codepoint(buf, index, false);
     return cp == UCS_INVALID ? cp : ucs_codepoint_to_utf8(cp);
 }
-
-//bool ucs_utf8_append(scf_buffer *buf, ucs_utf8_char ch) {
 
 static bool utf16_append_codepoint(scf_buffer *buf, ucs_codepoint cp, bool le) {
     unsigned char bytes[4];

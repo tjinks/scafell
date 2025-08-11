@@ -106,6 +106,15 @@ scf_operation *scf_get_operation(const void *p) {
     return get_block(p)->operation;
 }
 
+scf_endianness scf_determine_endianness(void) {
+    static const uint16_t testvalue_1 = 0x1234;
+    static const char *test_bytes = (const char *)&testvalue_1;
+    uint16_t testvalue_2 = ((uint16_t)test_bytes[0] << 8) + test_bytes[1];
+    return testvalue_1 == testvalue_2 ? SCF_BIG_ENDIAN : SCF_LITTLE_ENDIAN;
+}
+
+
+
 static void ensure_capacity(scf_buffer *buffer, size_t required) {
     if (buffer->capacity < required) {
         size_t new_capacity = 2 * buffer->capacity;
@@ -169,6 +178,9 @@ extern void scf_buffer_append(scf_buffer *buf1, const scf_buffer *buf2);
 extern void scf_buffer_insert(scf_buffer *buf1, const scf_buffer *buf2, size_t before);
 
 extern void scf_buffer_append_byte(scf_buffer *buf, unsigned char byte);
+
+extern scf_endianness scf_determine_endianness(void);
+
 
 
 

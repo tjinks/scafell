@@ -10,8 +10,8 @@
 #include "ucs_string.h"
 #include "err_handling.h"
 
-static void check_valid(const ucs_string *s) {
-    if (!ucs_is_valid(s)) scf_raise_error(SCF_LOGIC_ERROR, "Specified string is not a valid UTF* encoding");
+static inline void check_valid(const ucs_string *s) {
+    if (!ucs_is_valid(s)) scf_raise_error(SCF_LOGIC_ERROR, "Specified string is not a valid UTF8 encoding");
 }
 
 static inline void add_terminator(ucs_string *s) {
@@ -20,6 +20,10 @@ static inline void add_terminator(ucs_string *s) {
 
 static inline void remove_terminator(ucs_string *s) {
     s->bytes.size--;
+}
+
+static inline scf_operation *get_operation(const ucs_string *s) {
+    return scf_get_operation(s->bytes.data);
 }
 
 ucs_string ucs_string_create(scf_operation *op) {
@@ -37,6 +41,28 @@ ucs_string ucs_string_from_bytes(scf_operation *op, const void *bytes, size_t by
     return result;
 }
 
+void ucs_string_append(ucs_string *s1, const ucs_string *s2) {
+    check_valid(s1);
+    check_valid(s2);
+    scf_buffer_append(&s1->bytes, &s2->bytes);
+    s1->char_count += s2->char_count;
+}
+
+ucs_string ucs_substring(const ucs_iterator *from, size_t length) {
+    ucs_string result = ucs_string_create(get_operation(from->s));
+    ucs_iterator current = *from;
+    for (size_t i = 0; i < length; i++) {
+        ucs_utf8_char ch;
+        if (ucs_next(&current, &ch)) {
+            ucs_utf8_append(&current.s->bytes, ch);
+        } else {
+            break;
+        }
+    }
+    
+    return result;
+}
+
 ucs_iterator ucs_get_iterator(ucs_string *s) {
     check_valid(s);
     
@@ -50,28 +76,23 @@ ucs_iterator ucs_get_iterator(ucs_string *s) {
 ucs_iterator ucs_get_iterator_at(ucs_string *s, size_t char_index) {
     ucs_iterator result = ucs_get_iterator(s);
     while (result.char_index < char_index && result.char_index < s->char_count) {
-        result.byte_index += ucs_get_utf8_bytecount(s->bytes.data[result.byte_index]);
+        ucs_utf8_get(&s->bytes, &result.byte_index);
         result.char_index++;
     }
     
     return result;
 }
 
-bool ucs_next(ucs_iterator *iter, ucs_codepoint *codepoint) {
-#if XXX
-    scf_buffer bytebuffer = iter->s->bytes;
-    if (iter->byte_index >= bytebuffer.size) {
-        *codepoint = UCS_INVALID;
-        return false;
+bool ucs_next(ucs_iterator *iter, ucs_utf8_char *ch) {
+    if (iter->char_index < iter->s->char_count) {
+        *ch = ucs_utf8_get(&iter->s->bytes, &iter->byte_index);
+    } else {
+        *ch = UCS_INVALID;
     }
     
-    size_t bytecount;
-    *codepoint = ucs_utf8_get(&bytebuffer.data + iter->byte_index, bytebuffer.data + bytebuffer.size, &bytecount);
-    if (*codepoint == UCS_INVALID) return false;
+    if (*ch == UCS_INVALID) return false;
     
-    iter->byte_index += bytecount;
     iter->char_index++;
-#endif
     return true;
 }
 

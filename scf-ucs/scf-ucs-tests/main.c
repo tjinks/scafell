@@ -10,8 +10,8 @@
 
 
 int main(int argc, const char * argv[]) {
-    
     REGISTER(ucsdb_tests);
     REGISTER(codec_tests);
+    REGISTER(ucs_string_tests);
     return scuts(argc, argv);
 }
