@@ -19,7 +19,3 @@ void scf_shutdown(void) {
     ucs_dbclose();
 }
 
-scf_endianness scf_get_endianness(void) {
-    return endianness;
-}
-

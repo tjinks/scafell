@@ -42,11 +42,11 @@ static bool test_string_from_cstr(void) {
 }
 
 static bool test_string_from_wstr(void) {
-    static const unsigned char expected[] = {0x41, 0xC2, 0xA3, 0xF0, 0x90, 0x81, 0x8D, 0x00};
+    static const unsigned char expected[] = {0x31, 0xC2, 0xA3, 0xF0, 0x90, 0x81, 0x8D, 0x00};
     ucs_string s = ucs_string_from_wstr(&op, L"1£𐁍");
     bool result = ASSERT_EQ(3, s.char_count);
     result &= ASSERT_EQ(8, s.bytes.size);
-    result &= ASSERT_EQ(0, memcmp(expected, s.bytes.data[0], s.bytes.size));
+    result &= ASSERT_EQ(0, memcmp(expected, s.bytes.data, s.bytes.size));
     return result;
 }
 
@@ -83,5 +83,6 @@ CLEANUP(cleanup)
 TEST(test_string_from_bytes)
 TEST(test_iterator)
 TEST(test_string_from_cstr)
+TEST(test_string_from_wstr)
 END_TEST_GROUP
 
