@@ -9,6 +9,7 @@
 #include "scuts.h"
 #include "ucs_string.h"
 #include "mmgt.h"
+#include "machine_info.h"
 
 static SCF_OPERATION(op);
 
@@ -16,6 +17,7 @@ static const char data[] = {0x41, 0xEF, 0xBF, 0xBD, 0xF0, 0x90,0x8E, 0xBD, 0xC2,
 static size_t datalen;
 
 static void init(void) {
+    scf_initialise_machine_info();
     datalen = strlen(data);
 }
 

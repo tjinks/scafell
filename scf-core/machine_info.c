@@ -25,7 +25,7 @@ static scf_endianness determine_endianness(void) {
 }
 
 void scf_initialise_machine_info(void) {
-    machine_info.endianness = determine_endianness;
+    machine_info.endianness = determine_endianness();
 }
 
 scf_machine_info scf_get_machine_info(void) {
