@@ -15,6 +15,7 @@
 
 typedef enum {
     SCF_SUCCESS = 0
+    ,SCF_INTERNAL_ERROR
     ,SCF_OUT_OF_MEMORY
     ,SCF_LOGIC_ERROR
     ,SCF_OS_ERROR

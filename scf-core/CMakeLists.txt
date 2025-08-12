@@ -14,5 +14,6 @@ add_library(scf-core
  )
 
 target_link_libraries(scf-core PUBLIC compiler_flags)
+
 add_subdirectory(scf-core-tests)
 

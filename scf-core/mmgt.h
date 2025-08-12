@@ -18,11 +18,6 @@ extern scf_exhaustion_handler exhaustion_handler;
 
 struct scf_operation;
 
-typedef enum {
-    SCF_BIG_ENDIAN,
-    SCF_LITTLE_ENDIAN
-} scf_endianness;
-
 typedef struct scf_mem_block {
     struct scf_operation *operation;
     struct scf_mem_block *next;
@@ -75,7 +70,5 @@ inline void scf_buffer_insert(scf_buffer *buf1, const scf_buffer *buf2, size_t b
 inline void scf_buffer_append_byte(scf_buffer *buf, unsigned char byte) {
     scf_buffer_append_bytes(buf, &byte, 1);
 }
-
-scf_endianness scf_determine_endianness(void);
 
 #endif /* mmgt_h */

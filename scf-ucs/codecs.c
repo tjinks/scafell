@@ -143,6 +143,71 @@ bool ucs_utf8_append(scf_buffer *buf, ucs_utf8_char ch) {
 }
 
 /*-----------------------------------
+ * UTF32-specific logic
+ *---------------------------------*/
+
+static ucs_codepoint utf32_get_codepoint(const scf_buffer *buf, size_t *index, bool le) {
+    ucs_codepoint result;
+    if (*index + 4 <= buf->size) {
+        const unsigned char *current = buf->data + *index;
+        *index += 4;
+        if (le) {
+            result = current[0];
+            result |= ((ucs_codepoint)current[1] << 8);
+            result |= ((ucs_codepoint)current[2] << 16);
+            result |= ((ucs_codepoint)current[3] << 24);
+        } else {
+            result = current[3];
+            result |= ((ucs_codepoint)current[2] << 8);
+            result |= ((ucs_codepoint)current[1] << 16);
+            result |= ((ucs_codepoint)current[0] << 24);
+        }
+    } else {
+        result = UCS_INVALID;
+    }
+    
+    return result;
+}
+
+static bool utf32_append_codepoint(scf_buffer *buf, ucs_codepoint cp, bool le) {
+    unsigned char bytes[4];
+    if (le) {
+        bytes[0] = cp;
+        bytes[1] = cp >> 8;
+        bytes[2] = cp >> 16;
+        bytes[3] = cp >> 24;
+    } else {
+        bytes[3] = cp;
+        bytes[2] = cp >> 8;
+        bytes[1] = cp >> 16;
+        bytes[0] = cp >> 24;
+    }
+    
+    scf_buffer_append_bytes(buf, bytes, 4);
+    return true;
+}
+
+static ucs_utf8_char utf32le_get(const scf_buffer *buf, size_t *index) {
+    ucs_codepoint cp = utf32_get_codepoint(buf, index, true);
+    return cp == UCS_INVALID ? cp : ucs_codepoint_to_utf8(cp);
+}
+
+static ucs_utf8_char utf32be_get(const scf_buffer *buf, size_t *index) {
+    ucs_codepoint cp = utf32_get_codepoint(buf, index, false);
+    return cp == UCS_INVALID ? cp : ucs_codepoint_to_utf8(cp);
+}
+
+static bool utf32le_append(scf_buffer *buf, ucs_utf8_char ch) {
+    ucs_codepoint cp = ucs_utf8_to_codepoint(ch);
+    return utf32_append_codepoint(buf, cp, true);
+}
+
+static bool utf32be_append(scf_buffer *buf, ucs_utf8_char ch) {
+    ucs_codepoint cp = ucs_utf8_to_codepoint(ch);
+    return utf32_append_codepoint(buf, cp, false);
+}
+
+/*-----------------------------------
  * UTF16-specific logic
  *---------------------------------*/
 static const uint16_t first_high_surrogate = 0xD800;
@@ -251,6 +316,11 @@ static extractor get_extractor(ucs_encoding enc) {
             return utf16le_get;
         case UCS_UTF16 | UCS_BE:
             return utf16be_get;
+        case UCS_UTF32:
+        case UCS_UTF32 | UCS_LE:
+            return utf32le_get;
+        case UCS_UTF32 | UCS_BE:
+            return utf32be_get;
         default:
             scf_raise_error(SCF_INVALID_ENCODING, "Unsupported encoding");
     }
@@ -265,6 +335,11 @@ static appender get_appender(ucs_encoding enc) {
             return utf16le_append;
         case UCS_UTF16 | UCS_BE:
             return utf16be_append;
+        case UCS_UTF32:
+        case UCS_UTF32 | UCS_LE:
+            return utf32le_append;
+        case UCS_UTF32 | UCS_BE:
+            return utf32be_append;
         default:
             scf_raise_error(SCF_INVALID_ENCODING, "Unsupported encoding");
     }
