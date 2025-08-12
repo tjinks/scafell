@@ -28,6 +28,26 @@ static bool test_string_from_bytes(void) {
     return ASSERT_EQ(4, s.char_count);
 }
 
+static bool test_string_from_cstr(void) {
+    ucs_string s = ucs_string_from_cstr(&op, "1£");
+    bool result = ASSERT_EQ(2, s.char_count);
+    result &= ASSERT_EQ(4, s.bytes.size);
+    result &= ASSERT_EQ(49, s.bytes.data[0]);
+    result &= ASSERT_EQ(0xc2, s.bytes.data[1]);
+    result &= ASSERT_EQ(0xa3, s.bytes.data[2]);
+    result &= ASSERT_EQ(0, s.bytes.data[3]);
+    return result;
+}
+
+static bool test_string_from_wstr(void) {
+    static const unsigned char expected[] = {0x41, 0xC2, 0xA3, 0xF0, 0x90, 0x81, 0x8D, 0x00};
+    ucs_string s = ucs_string_from_wstr(&op, L"1£𐁍");
+    bool result = ASSERT_EQ(3, s.char_count);
+    result &= ASSERT_EQ(8, s.bytes.size);
+    result &= ASSERT_EQ(0, memcmp(expected, s.bytes.data[0], s.bytes.size));
+    return result;
+}
+
 static bool test_iterator(void) {
     ucs_string s = ucs_string_from_bytes(&op, data, datalen, UCS_UTF8);
     ucs_iterator iter = ucs_get_iterator(&s);
@@ -60,5 +80,6 @@ INIT(init)
 CLEANUP(cleanup)
 TEST(test_string_from_bytes)
 TEST(test_iterator)
+TEST(test_string_from_cstr)
 END_TEST_GROUP
 

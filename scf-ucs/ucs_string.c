@@ -6,10 +6,12 @@
 //
 
 #include <string.h>
+#include <wchar.h>
 
 #include "ucs_string.h"
+#include "codecs.h"
 #include "err_handling.h"
-#include "../scf/scf.h"
+#include "machine_info.h"
 
 static inline void check_valid(const ucs_string* s) {
 	if (!ucs_is_valid(s)) scf_raise_error(SCF_LOGIC_ERROR, "Specified string is not a valid UTF8 encoding");
@@ -47,17 +49,27 @@ ucs_string ucs_string_from_cstr(scf_operation* op, const char* s) {
 }
 
 ucs_string ucs_string_from_wstr(scf_operation* op, const wchar_t* s) {
-	size_t bytecount;
-	ucs_encoding enc;
+    size_t bytecount;
+    ucs_encoding enc;
+    
 #ifdef _MSC_VER
-	bytecount = 2 * wcslen(s);
-	enc = UCS_UTF16;
+    bytecount = 2 * wcslen(s);
+    enc = UCS_UTF16;
 #else
-	bytecount = 4 * wcslen(s);
-	end = UCS_UTF32;
+    bytecount = 4 * wcslen(s);
+    enc = UCS_UTF32;
 #endif
-	scf_buffer bytes = scf_buffer_wrap((void*)s, bytecount);
-
+    
+    switch (scf_get_machine_info().endianness) {
+        case SCF_BIG_ENDIAN:
+            enc |= UCS_BE;
+            break;
+        case SCF_LITTLE_ENDIAN:
+            enc |= UCS_LE;
+            break;
+    }
+        
+    return ucs_string_from_bytes(op, s, bytecount, enc);
 }
 
 ucs_string ucs_string_copy(scf_operation* op, const ucs_string* s) {
