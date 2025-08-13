@@ -48,15 +48,25 @@ ucs_string ucs_string_from_cstr(scf_operation* op, const char* s) {
 	return ucs_string_from_bytes(op, s, strlen(s), UCS_UTF8);
 }
 
+ucs_string ucs_string_from_wstr_with_enc(scf_operation* op, const wchar_t* s, ucs_encoding enc) {
+	size_t bytecount;
+
+#ifdef _MSC_VER
+	bytecount = 2 * wcslen(s);
+#else
+	bytecount = 4 * wcslen(s);
+#endif
+
+	return ucs_string_from_bytes(op, s, bytecount, enc);
+}
+
 ucs_string ucs_string_from_wstr(scf_operation* op, const wchar_t* s) {
     size_t bytecount;
     ucs_encoding enc;
     
 #ifdef _MSC_VER
-    bytecount = 2 * wcslen(s);
     enc = UCS_UTF16;
 #else
-    bytecount = 4 * wcslen(s);
     enc = UCS_UTF32;
 #endif
     
@@ -69,7 +79,7 @@ ucs_string ucs_string_from_wstr(scf_operation* op, const wchar_t* s) {
             break;
     }
         
-    return ucs_string_from_bytes(op, s, bytecount, enc);
+    return ucs_string_from_wstr_with_enc(op, s, enc);
 }
 
 ucs_string ucs_string_copy(scf_operation* op, const ucs_string* s) {

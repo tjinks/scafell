@@ -46,6 +46,8 @@ ucs_string ucs_string_from_cstr(scf_operation* op, const char* s);
 
 ucs_string ucs_string_from_wstr(scf_operation* op, const wchar_t* s);
 
+ucs_string ucs_string_from_wstr_with_enc(scf_operation* op, const wchar_t* s, ucs_encoding enc);
+
 ucs_string ucs_string_copy(scf_operation *op, const ucs_string *s);
 
 void ucs_string_append(ucs_string *s1, const ucs_string *s2);

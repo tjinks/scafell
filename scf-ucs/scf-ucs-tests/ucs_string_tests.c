@@ -43,7 +43,17 @@ static bool test_string_from_cstr(void) {
 
 static bool test_string_from_wstr(void) {
     static const unsigned char expected[] = {0x31, 0xC2, 0xA3, 0xF0, 0x90, 0x81, 0x8D, 0x00};
-    ucs_string s = ucs_string_from_wstr(&op, L"1£𐁍");
+
+/*
+ * The following assignment results in different code in Visual Studio depending on the encoding of
+ * the source file, so we provide an explicit UTF16 encoding below.
+ */
+#ifndef _MSC_VER
+    static const wchar_t input[] = L"1£𐁍";
+#else
+    static const wchar_t input[] = { 0x31, 0xa3, 0xd800, 0xdc4d, 0 };
+#endif
+    ucs_string s = ucs_string_from_wstr(&op, input);
     bool result = ASSERT_EQ(3, s.char_count);
     result &= ASSERT_EQ(8, s.bytes.size);
     result &= ASSERT_EQ(0, memcmp(expected, s.bytes.data, s.bytes.size));

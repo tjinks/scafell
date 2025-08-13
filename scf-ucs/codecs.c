@@ -17,9 +17,6 @@ typedef bool (*appender)(scf_buffer *, ucs_utf8_char);
  * UTF8-specific logic
  *---------------------------------*/
 
-// Declared inline - see codecs.h
-//extern size_t ucs_get_utf8_bytecount(unsigned char first_byte);
-
 ucs_codepoint ucs_utf8_to_codepoint(ucs_utf8_char ch) {
     ucs_codepoint result;
     if (ch < 0xFF) {
