@@ -17,7 +17,7 @@
 
 static SCF_OPERATION(op);
 
-static const char data[] = {0x41, 0xEF, 0xBF, 0xBD, 0xF0, 0x90,0x8E, 0xBD, 0xC2, 0xA3, 0};
+static const char data[] = {0x41, 0xEF, 0xBF, 0xBD, 0xF0, 0x90, 0x8E, 0xBD, 0xC2, 0xA3, 0};
 static size_t datalen;
 
 static void init(void) {
@@ -64,7 +64,7 @@ static bool test_from_wstr(void) {
     return result;
 }
 
-static bool test_iterator(void) {
+static bool test_forward_iteration(void) {
     ucs_string s = ucs_from_bytes(&op, data, datalen, UCS_UTF8);
     ucs_iterator iter = ucs_get_iterator(&s);
     bool result = true;
@@ -91,12 +91,39 @@ static bool test_iterator(void) {
     return result;
 }
 
+static bool test_reverse_iteration(void) {
+    ucs_string s = ucs_from_bytes(&op, data, datalen, UCS_UTF8);
+    ucs_iterator iter = ucs_get_iterator_at(&s, 4);
+    bool result = true;
+    ucs_utf8_char ch;
+    for (int i = 0 ; i < 4; i++) {
+        result = result && ASSERT_TRUE(ucs_prev(&iter, &ch));
+        switch (i) {
+            case 3:
+                result = result && ASSERT_EQ(0x41, ch);
+                break;
+            case 2:
+                result = result && ASSERT_EQ(0xEFBFBD, ch);
+                break;
+            case 1:
+                result = result && ASSERT_EQ(0xF0908EBD, ch);
+                break;
+            case 0:
+                result = result && ASSERT_EQ(0xC2A3, ch);
+                break;
+        }
+    }
+    
+    result = result && ASSERT_FALSE(ucs_next(&iter, &ch));
+    return result;
+}
+
 static bool test_append(void) {
     ucs_string s1 = ucs_from_cstr(&op, "1" POUND);
     ucs_string s2 = ucs_from_cstr(&op, ALAF);
     ucs_string expected = ucs_from_cstr(&op, "1" POUND ALAF);
     
-    ucs_string_append(&s1, &s2);
+    ucs_append(&s1, &s2);
     bool result = ASSERT_EQ(3, s1.char_count);
     result &= ASSERT_EQ(0, ucs_compare(&s1, &expected));
     return result;
@@ -125,8 +152,8 @@ static bool test_overlength_substring(void) {
 BEGIN_TEST_GROUP(ucs_string_tests)
 INIT(init)
 CLEANUP(cleanup)
-TEST(test_from_bytes)
-TEST(test_iterator)
+TEST(test_forward_iteration)
+TEST(test_reverse_iteration)
 TEST(test_from_cstr)
 TEST(test_from_wstr)
 TEST(test_append)

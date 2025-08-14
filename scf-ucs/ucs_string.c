@@ -89,12 +89,19 @@ ucs_string ucs_string_copy(scf_operation* op, const ucs_string* s) {
 	return result;
 }
 
-void ucs_string_append(ucs_string* s1, const ucs_string* s2) {
+void ucs_append(ucs_string* s1, const ucs_string* s2) {
 	check_valid(s1);
 	check_valid(s2);
     remove_terminator(s1);
 	scf_buffer_append(&s1->bytes, &s2->bytes);
 	s1->char_count += s2->char_count;
+}
+
+void ucs_append_char(ucs_string *s, ucs_utf8_char ch) {
+    check_valid(s);
+    remove_terminator(s);
+    ucs_utf8_append(&s->bytes, ch);
+    add_terminator(s);
 }
 
 ucs_string ucs_substring(const ucs_iterator* from, size_t length) {
@@ -136,7 +143,7 @@ ucs_iterator ucs_get_iterator(ucs_string* s) {
 
 ucs_iterator ucs_get_iterator_at(ucs_string* s, size_t char_index) {
 	ucs_iterator result = ucs_get_iterator(s);
-	while (result.char_index < char_index && result.char_index < s->char_count) {
+	while (result.char_index < char_index && result.char_index <= s->char_count) {
 		ucs_utf8_get(&s->bytes, &result.byte_index);
 		result.char_index++;
 	}
@@ -155,6 +162,33 @@ bool ucs_next(ucs_iterator* iter, ucs_utf8_char* ch) {
 
 	iter->char_index++;
 	return true;
+}
+
+bool ucs_prev(ucs_iterator *iter, ucs_utf8_char *ch) {
+    if (iter->byte_index == 0) {
+        *ch = UCS_INVALID;
+        return false;
+    }
+    
+    iter->byte_index--;
+    const unsigned char *ptr = iter->s->bytes.data + iter->byte_index;
+    *ch = *ptr;
+    if (*ptr <= 0x7F) {
+        return true;
+    }
+    
+    int shift = 8;
+    while (true) {
+        ptr--;
+        iter->byte_index--;
+        ucs_utf8_char nextbyte = *ptr;
+        *ch |= (nextbyte << shift);
+        if ((nextbyte & 0xC0) != 0x80) {
+            return true;
+        }
+        
+        shift += 8;
+    }
 }
 
 /*----------------------------------------------

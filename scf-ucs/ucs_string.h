@@ -52,7 +52,9 @@ ucs_string ucs_from_cstr_with_encoding(scf_operation* op, const char* s, ucs_enc
 
 ucs_string ucs_string_copy(scf_operation *op, const ucs_string *s);
 
-void ucs_string_append(ucs_string *s1, const ucs_string *s2);
+void ucs_append(ucs_string *s1, const ucs_string *s2);
+
+void ucs_append_char(ucs_string *s, ucs_utf8_char ch);
 
 ucs_string ucs_substring(const ucs_iterator *from, size_t length);
 
@@ -63,6 +65,8 @@ ucs_iterator ucs_get_iterator(ucs_string *s);
 ucs_iterator ucs_get_iterator_at(ucs_string *s, size_t char_index);
 
 bool ucs_next(ucs_iterator *iter, ucs_utf8_char *ch);
+
+bool ucs_prev(ucs_iterator *iter, ucs_utf8_char *ch);
 
 inline bool ucs_at_end(const ucs_iterator *iter) {
     return iter->byte_index == iter->s->bytes.size;

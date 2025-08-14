@@ -132,8 +132,6 @@ bool ucs_utf8_append(scf_buffer *buf, ucs_utf8_char ch) {
             data[3] = ch;
             scf_buffer_append_bytes(buf, &data[4 - bytecount], bytecount);
             break;
-        default:
-            return false;
     }
     
     return true;
