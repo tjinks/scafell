@@ -40,19 +40,23 @@ typedef struct {
 
 ucs_string ucs_string_create(scf_operation *op);
 
-ucs_string ucs_string_from_bytes(scf_operation *op, const void *bytes, size_t bytecount, ucs_encoding enc);
+ucs_string ucs_from_bytes(scf_operation *op, const void *bytes, size_t bytecount, ucs_encoding enc);
 
-ucs_string ucs_string_from_cstr(scf_operation* op, const char* s);
+ucs_string ucs_from_cstr(scf_operation* op, const char* s);
 
-ucs_string ucs_string_from_wstr(scf_operation* op, const wchar_t* s);
+ucs_string ucs_from_wstr(scf_operation* op, const wchar_t* s);
 
-ucs_string ucs_string_from_wstr_with_enc(scf_operation* op, const wchar_t* s, ucs_encoding enc);
+ucs_string ucs_from_wstr_with_encoding(scf_operation* op, const wchar_t* s, ucs_encoding enc);
+
+ucs_string ucs_from_cstr_with_encoding(scf_operation* op, const char* s, ucs_encoding enc);
 
 ucs_string ucs_string_copy(scf_operation *op, const ucs_string *s);
 
 void ucs_string_append(ucs_string *s1, const ucs_string *s2);
 
 ucs_string ucs_substring(const ucs_iterator *from, size_t length);
+
+int ucs_compare(const ucs_string *s1, const ucs_string *s2);
 
 ucs_iterator ucs_get_iterator(ucs_string *s);
 

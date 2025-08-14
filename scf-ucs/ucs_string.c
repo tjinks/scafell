@@ -35,7 +35,7 @@ ucs_string ucs_string_create(scf_operation* op) {
 	return result;
 }
 
-ucs_string ucs_string_from_bytes(scf_operation* op, const void* bytes, size_t bytecount, ucs_encoding enc) {
+ucs_string ucs_from_bytes(scf_operation* op, const void* bytes, size_t bytecount, ucs_encoding enc) {
 	ucs_string result;
 	scf_buffer wrapped_bytes = scf_buffer_wrap((void*)bytes, bytecount);
 	result.bytes = scf_buffer_create(op, bytecount);
@@ -44,24 +44,20 @@ ucs_string ucs_string_from_bytes(scf_operation* op, const void* bytes, size_t by
 	return result;
 }
 
-ucs_string ucs_string_from_cstr(scf_operation* op, const char* s) {
-	return ucs_string_from_bytes(op, s, strlen(s), UCS_UTF8);
+ucs_string ucs_from_cstr_with_encoding(scf_operation* op, const char* s, ucs_encoding enc) {
+	return ucs_from_bytes(op, s, strlen(s), enc);
 }
 
-ucs_string ucs_string_from_wstr_with_enc(scf_operation* op, const wchar_t* s, ucs_encoding enc) {
-	size_t bytecount;
-
-#ifdef _MSC_VER
-	bytecount = 2 * wcslen(s);
-#else
-	bytecount = 4 * wcslen(s);
-#endif
-
-	return ucs_string_from_bytes(op, s, bytecount, enc);
+ucs_string ucs_from_cstr(scf_operation* op, const char* s) {
+    return ucs_from_cstr_with_encoding(op, s, UCS_UTF8);
 }
 
-ucs_string ucs_string_from_wstr(scf_operation* op, const wchar_t* s) {
-    size_t bytecount;
+ucs_string ucs_from_wstr_with_encoding(scf_operation* op, const wchar_t* s, ucs_encoding enc) {
+    size_t bytecount = sizeof(wchar_t) * wcslen(s);
+	return ucs_from_bytes(op, s, bytecount, enc);
+}
+
+ucs_string ucs_from_wstr(scf_operation* op, const wchar_t* s) {
     ucs_encoding enc;
     
 #ifdef _MSC_VER
@@ -79,7 +75,7 @@ ucs_string ucs_string_from_wstr(scf_operation* op, const wchar_t* s) {
             break;
     }
         
-    return ucs_string_from_wstr_with_enc(op, s, enc);
+    return ucs_from_wstr_with_encoding(op, s, enc);
 }
 
 ucs_string ucs_string_copy(scf_operation* op, const ucs_string* s) {
@@ -96,23 +92,36 @@ ucs_string ucs_string_copy(scf_operation* op, const ucs_string* s) {
 void ucs_string_append(ucs_string* s1, const ucs_string* s2) {
 	check_valid(s1);
 	check_valid(s2);
+    remove_terminator(s1);
 	scf_buffer_append(&s1->bytes, &s2->bytes);
 	s1->char_count += s2->char_count;
 }
 
 ucs_string ucs_substring(const ucs_iterator* from, size_t length) {
 	ucs_string result = ucs_string_create(get_operation(from->s));
-	ucs_iterator current = *from;
+    remove_terminator(&result);
+    result.char_count = length;
+    ucs_iterator current = *from;
+    
 	for (size_t i = 0; i < length; i++) {
 		ucs_utf8_char ch;
 		if (ucs_next(&current, &ch)) {
-			ucs_utf8_append(&current.s->bytes, ch);
+            ucs_utf8_append(&result.bytes, ch);
 		} else {
+            result.char_count = i;
 			break;
 		}
 	}
 
+    add_terminator(&result);
 	return result;
+}
+
+int ucs_compare(const ucs_string *s1, const ucs_string *s2) {
+    check_valid(s1);
+    check_valid(s2);
+    int result = strcmp((const char *)s1->bytes.data, (const char *)s2->bytes.data);
+    return result;
 }
 
 ucs_iterator ucs_get_iterator(ucs_string* s) {
