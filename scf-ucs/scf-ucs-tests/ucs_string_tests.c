@@ -101,6 +101,7 @@ static bool test_reverse_iteration(void) {
         switch (i) {
             case 3:
                 result = result && ASSERT_EQ(0x41, ch);
+                result = result && ASSERT_EQ(0, iter.char_index);
                 break;
             case 2:
                 result = result && ASSERT_EQ(0xEFBFBD, ch);
@@ -114,7 +115,7 @@ static bool test_reverse_iteration(void) {
         }
     }
     
-    result = result && ASSERT_FALSE(ucs_next(&iter, &ch));
+    result = result && ASSERT_FALSE(ucs_prev(&iter, &ch));
     return result;
 }
 

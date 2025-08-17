@@ -60,12 +60,12 @@ ucs_string ucs_from_wstr_with_encoding(scf_operation* op, const wchar_t* s, ucs_
 ucs_string ucs_from_wstr(scf_operation* op, const wchar_t* s) {
     ucs_encoding enc;
     
-#ifdef _MSC_VER
-    enc = UCS_UTF16;
-#else
-    enc = UCS_UTF32;
-#endif
-    
+    if (sizeof(wchar_t) == 2) {
+        enc = UCS_UTF16;
+    } else {
+        enc = UCS_UTF32;
+    }
+        
     switch (scf_get_machine_info().endianness) {
         case SCF_BIG_ENDIAN:
             enc |= UCS_BE;
@@ -143,10 +143,19 @@ ucs_iterator ucs_get_iterator(ucs_string* s) {
 
 ucs_iterator ucs_get_iterator_at(ucs_string* s, size_t char_index) {
 	ucs_iterator result = ucs_get_iterator(s);
-	while (result.char_index < char_index && result.char_index <= s->char_count) {
-		ucs_utf8_get(&s->bytes, &result.byte_index);
-		result.char_index++;
-	}
+    if (char_index >= 0) {
+        while (result.char_index < char_index && result.char_index <= s->char_count) {
+            ucs_utf8_get(&s->bytes, &result.byte_index);
+            result.char_index++;
+        }
+    } else {
+        result.char_index = s->char_count;
+        result.byte_index = s->bytes.size;
+        for (int i = 0; i < -char_index; i++) {
+            ucs_utf8_char notused;
+            if (!ucs_prev(&result, &notused)) return result;
+        }
+    }
 
 	return result;
 }
@@ -171,24 +180,21 @@ bool ucs_prev(ucs_iterator *iter, ucs_utf8_char *ch) {
     }
     
     iter->byte_index--;
-    const unsigned char *ptr = iter->s->bytes.data + iter->byte_index;
-    *ch = *ptr;
-    if (*ptr <= 0x7F) {
-        return true;
-    }
+    *ch = iter->s->bytes.data[iter->byte_index];
+    if (*ch <= 0x7F) goto done;
     
     int shift = 8;
     while (true) {
-        ptr--;
         iter->byte_index--;
-        ucs_utf8_char nextbyte = *ptr;
+        ucs_utf8_char nextbyte = iter->s->bytes.data[iter->byte_index];
         *ch |= (nextbyte << shift);
-        if ((nextbyte & 0xC0) != 0x80) {
-            return true;
-        }
-        
+        if ((nextbyte & 0xC0) != 0x80) goto done;
         shift += 8;
     }
+    
+done:
+    iter->char_index--;
+    return true;
 }
 
 /*----------------------------------------------
