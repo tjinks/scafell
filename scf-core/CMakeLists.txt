@@ -5,9 +5,6 @@ add_library(scf-core
 	list.c list.h
 	mmgt.c mmgt.h
     machine_info.c machine_info.h
-	str.c str.h
-	ucdb.c ucdb.h
-	unicode_data.h
     
 	osdefs.h
 	osunix.h
