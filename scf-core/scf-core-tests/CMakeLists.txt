@@ -2,7 +2,6 @@ add_executable(scf-core-tests
 	main.c
 	buffer_tests.c
 	hash_tests.c
-	string_tests.c
 	list_tests.c
 	mmgt_tests.c
  )

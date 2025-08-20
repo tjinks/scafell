@@ -41,6 +41,6 @@ typedef struct {
 void ucs_dbinit(void);
 void ucs_dbclose(void);
 
-ucs_details ucs_lookup(ucs_codepoint cp);
+ucs_details ucs_lookup(ucs_utf8_char ch);
 
 #endif /* ucdb_h */

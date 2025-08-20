@@ -9,6 +9,7 @@
 #include <wchar.h>
 
 #include "ucs_string.h"
+#include "ucs_db.h"
 #include "codecs.h"
 #include "err_handling.h"
 #include "machine_info.h"
@@ -195,6 +196,30 @@ bool ucs_prev(ucs_iterator *iter, ucs_utf8_char *ch) {
 done:
     iter->char_index--;
     return true;
+}
+
+ucs_string ucs_lower(const ucs_string *s) {
+    ucs_iterator iter = ucs_get_iterator((ucs_string *)s);
+    ucs_string result = ucs_string_create(get_operation(s));
+    ucs_utf8_char ch;
+    while (ucs_next(&iter, &ch)) {
+        ucs_details details = ucs_lookup(ch);
+        ucs_append_char(&result, details.lc_utf8);
+    }
+    
+    return result;
+}
+
+ucs_string ucs_upper(const ucs_string *s) {
+    ucs_iterator iter = ucs_get_iterator((ucs_string *)s);
+    ucs_string result = ucs_string_create(get_operation(s));
+    ucs_utf8_char ch;
+    while (ucs_next(&iter, &ch)) {
+        ucs_details details = ucs_lookup(ch);
+        ucs_append_char(&result, details.uc_utf8);
+    }
+    
+    return result;
 }
 
 /*----------------------------------------------

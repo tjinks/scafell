@@ -68,6 +68,10 @@ bool ucs_next(ucs_iterator *iter, ucs_utf8_char *ch);
 
 bool ucs_prev(ucs_iterator *iter, ucs_utf8_char *ch);
 
+ucs_string ucs_lower(const ucs_string *s);
+
+ucs_string ucs_upper(const ucs_string *s);
+
 inline bool ucs_at_end(const ucs_iterator *iter) {
     return iter->byte_index == iter->s->bytes.size;
 }

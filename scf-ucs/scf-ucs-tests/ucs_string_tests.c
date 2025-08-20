@@ -22,11 +22,13 @@ static size_t datalen;
 
 static void init(void) {
     scf_initialise_machine_info();
+    ucs_dbinit();
     datalen = strlen(data);
 }
 
 static void cleanup(void) {
     scf_complete(&op);
+    ucs_dbclose();
 }
 
 static bool test_from_bytes(void) {
@@ -150,6 +152,21 @@ static bool test_overlength_substring(void) {
     return result;
 }
 
+static bool test_upper(void) {
+    ucs_string s1 = ucs_from_cstr(&op, "Hello123");
+    ucs_string actual = ucs_upper(&s1);
+    ucs_string expected = ucs_from_cstr(&op, "HELLO123");
+    return ASSERT_TRUE(ucs_compare(&actual, &expected) == 0);
+}
+
+
+static bool test_lower(void) {
+    ucs_string s1 = ucs_from_cstr(&op, "Hello, World");
+    ucs_string actual = ucs_lower(&s1);
+    ucs_string expected = ucs_from_cstr(&op, "hello, world");
+    return ASSERT_TRUE(ucs_compare(&actual, &expected) == 0);
+}
+
 BEGIN_TEST_GROUP(ucs_string_tests)
 INIT(init)
 CLEANUP(cleanup)
@@ -160,5 +177,7 @@ TEST(test_from_wstr)
 TEST(test_append)
 TEST(test_substring)
 TEST(test_overlength_substring)
+TEST(test_lower)
+TEST(test_upper)
 END_TEST_GROUP
 
