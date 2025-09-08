@@ -11,7 +11,7 @@
 
 void scf_init(scf_err_handler err_handler) {
     scf_set_err_handler(err_handler);
-    scf_determine_endianness();
+    scf_initialise_machine_info();
     ucs_dbinit();
 }
 

@@ -4,6 +4,9 @@ add_executable(scf-core-tests
 	hash_tests.c
 	list_tests.c
 	mmgt_tests.c
+    codec_tests.c
+    ucs_string_tests.c
+    ucsdb_tests.c
  )
 
 target_link_libraries(scf-core-tests PUBLIC compiler_flags)
