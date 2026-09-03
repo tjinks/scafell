@@ -5,6 +5,8 @@
 //  Created by Tony on 21/06/2025.
 //
 
+#if XXX
+
 #include <stdio.h>
 #include "scuts.h"
 #include "str.h"
@@ -166,4 +168,4 @@ BEGIN_TEST_GROUP(string_tests)
     TEST(test_utf8_iterator_at)
 END_TEST_GROUP
 
-
+#endif

@@ -80,6 +80,12 @@ void *scf_realloc(void *p, size_t required) {
     return new_block->data;
 }
 
+void scf_free(void *p) {
+    scf_mem_block *block = get_block(p);
+    remove_block(block);
+    free(p);
+}
+
 void scf_complete(scf_operation *operation) {
     scf_mem_block *block;
     for (block = operation->first; block; block = block->next) {
@@ -155,6 +161,8 @@ scf_buffer scf_buffer_extract(const scf_buffer *buffer, size_t starting_from, si
 extern void scf_buffer_append(scf_buffer *buf1, const scf_buffer *buf2);
 
 extern void scf_buffer_insert(scf_buffer *buf1, scf_buffer *buf2, size_t before);
+
+extern void scf_buffer_free(scf_buffer *buf);
 
 
 

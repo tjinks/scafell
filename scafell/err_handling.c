@@ -27,20 +27,23 @@ static noreturn void raise_error(scf_error_code code, scf_os_error_code os_error
     err_info.message[i] = '\0';
     if (err_handler) {
         err_handler(&err_info);
+    } else {
+        default_err_handler(&err_info);
     }
     
-    default_err_handler(&err_info);
+    fprintf(stderr, "Unexpected return from error handler\n");
+    abort();
 }
 
 void scf_set_err_handler(scf_err_handler handler) {
     err_handler = handler;
 }
 
-void scf_raise_error(scf_error_code code, const char *msg) {
+noreturn void scf_raise_error(scf_error_code code, const char *msg) {
     raise_error(code, 0, msg);
 }
 
-void scf_raise_os_error(scf_os_error_code code, const char *msg){
+noreturn void scf_raise_os_error(scf_os_error_code code, const char *msg){
     raise_error(SCF_OS_ERROR, code, msg);
 }
 

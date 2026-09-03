@@ -39,6 +39,7 @@ typedef struct {
 void *scf_alloc(scf_operation *operation, size_t required);
 void *scf_alloc_with_cleanup(scf_operation *operation, scf_cleanup_func cleanup, size_t required);
 void *scf_realloc(void *p, size_t required);
+void scf_free(void *p);
 void scf_complete(scf_operation *operation);
 scf_operation *scf_get_operation(const void *p);
 
@@ -54,6 +55,10 @@ inline void scf_buffer_append(scf_buffer *buf1, const scf_buffer *buf2) {
 
 inline void scf_buffer_insert(scf_buffer *buf1, scf_buffer *buf2, size_t before) {
     scf_buffer_insert_bytes(buf1, buf2->data, before, buf2->size);
+}
+
+inline void scf_buffer_free(scf_buffer *buf) {
+    scf_free(buf->data);
 }
 
 #endif /* mmgt_h */

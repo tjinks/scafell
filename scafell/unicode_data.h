@@ -2,15 +2,8 @@
 
 #include "ucdb.h"
 
-static const struct {
-    int codepoint;
-    scf_char_category category;
-    int digit_value;
-    int uc_codepoint;
-    int lc_codepoint;
-    int tc_codepoint;
-} uc_database[] = {
-{0x0000, UC_OTHER, -1, 0x0000, 0x0000, 0x0000}
+static scf_char_info uc_database[] = {
+ {0x0000, UC_OTHER, -1, 0x0000, 0x0000, 0x0000}
 ,{0x0001, UC_OTHER, -1, 0x0001, 0x0001, 0x0001}
 ,{0x0002, UC_OTHER, -1, 0x0002, 0x0002, 0x0002}
 ,{0x0003, UC_OTHER, -1, 0x0003, 0x0003, 0x0003}

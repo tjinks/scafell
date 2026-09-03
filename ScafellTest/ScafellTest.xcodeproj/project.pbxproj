@@ -25,7 +25,6 @@
 /* Begin PBXFileReference section */
 		EA082FBE2E09510F00C0F207 /* ScafellTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ScafellTest; sourceTree = BUILT_PRODUCTS_DIR; };
 		EA19E4E72E0953AC0058746D /* libscafell.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libscafell.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		EA19E4E92E0953C50058746D /* libscuts.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libscuts.a; path = ../../../../mylibs/scuts/libscuts.a; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -68,7 +67,6 @@
 		EA19E4E62E0953AC0058746D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				EA19E4E92E0953C50058746D /* libscuts.a */,
 				EA19E4E72E0953AC0058746D /* libscafell.a */,
 			);
 			name = Frameworks;
@@ -106,7 +104,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastUpgradeCheck = 1620;
+				LastUpgradeCheck = 2660;
 				TargetAttributes = {
 					EA082FBD2E09510F00C0F207 = {
 						CreatedOnToolsVersion = 16.2;
@@ -177,7 +175,9 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 4252B3HDL2;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -201,6 +201,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 			};
 			name = Debug;
 		};
@@ -238,7 +239,9 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 4252B3HDL2;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -255,6 +258,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 			};
 			name = Release;
 		};
@@ -262,7 +266,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 4252B3HDL2;
+				DEAD_CODE_STRIPPING = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../scafell";
 				LIBRARY_SEARCH_PATHS = "";
@@ -274,7 +278,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 4252B3HDL2;
+				DEAD_CODE_STRIPPING = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../scafell";
 				LIBRARY_SEARCH_PATHS = "";
