@@ -5,10 +5,14 @@
 //  Created by Tony on 21/06/2025.
 //
 
+#include <memory.h>
 #include "str.h"
 #include "ucdb.h"
 #include "os/osdefs.h"
 #include "err_handling.h"
+
+#define CMP(a, b) ((a) < (b) ? -1 : ((a) > (b) ? 1 : 0))
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
 
 static noreturn void invalid_encoding(void) {
     scf_raise_error(SCF_INVALID_STRING_OPERATION, "Unsupported character encoding");
@@ -22,19 +26,19 @@ static scf_char utf8_char_from_codepoint(scf_codepoint cp) {
         result.bytes[index++] = cp;
         result.byte_count = index;
     } else if (cp <= 0x7FF) {
-        result.bytes[index++] = 0x80 + (cp & 0x3F);
         result.bytes[index++] = 0xC0 + (cp >> 6);
+        result.bytes[index++] = 0x80 + (cp & 0x3F);
         result.byte_count = index;
     } else if (cp <= 0xFFFF) {
-        result.bytes[index++] = 0x80 + (cp & 0x3F);
-        result.bytes[index++] = 0x80 + ((cp >> 6) & 0x3F);
         result.bytes[index++] = 0xE0 + (cp >> 12);
+        result.bytes[index++] = 0x80 + ((cp >> 6) & 0x3F);
+        result.bytes[index++] = 0x80 + (cp & 0x3F);
         result.byte_count = index;
     } else if (cp <= 0x10FFFF) {
-        result.bytes[index++] = 0x80 + (cp & 0x3F);
-        result.bytes[index++] = 0x80 + ((cp >> 6) & 0x3F);
-        result.bytes[index++] = 0x80 + ((cp >> 12) & 0x3F);
         result.bytes[index++] = 0xF0 + (cp >> 18);
+        result.bytes[index++] = 0x80 + ((cp >> 12) & 0x3F);
+        result.bytes[index++] = 0x80 + ((cp >> 6) & 0x3F);
+        result.bytes[index++] = 0x80 + (cp & 0x3F);
         result.byte_count = index;
     }
     
@@ -170,6 +174,12 @@ scf_codepoint scf_codepoint_from_char(scf_char ch) {
     }
 }
 
+int scf_char_cmp(scf_char ch1, scf_char ch2) {
+    scf_codepoint cp1 = scf_codepoint_from_char(ch1);
+    scf_codepoint cp2 = scf_codepoint_from_char(ch2);
+    return CMP(cp1, cp2);
+}
+
 scf_string *scf_string_with_encoding(scf_operation *op, scf_encoding encoding) {
     scf_string *result = scf_alloc(op, sizeof(scf_string));
     result->encoding = encoding;
@@ -188,6 +198,39 @@ void scf_string_append_char(scf_string *s, scf_char c) {
     
     s->char_count++;
 }
+
+int scf_string_cmp(const scf_string *s1, const scf_string *s2) {
+    int result;
+    if (s1->encoding == s2->encoding) {
+        size_t s1_byte_count = s1->buf.size;
+        size_t s2_byte_count = s2->buf.size;
+        size_t number_of_bytes_to_compare = MIN(s1_byte_count, s2_byte_count);
+        result = memcmp(s1->buf.data, s2->buf.data, number_of_bytes_to_compare);
+        if (result == 0) {
+            result = CMP(s1_byte_count, s2_byte_count);
+        }
+    } else {
+        size_t s1_char_count = s1->char_count;
+        size_t s2_char_count = s2->char_count;
+        size_t number_of_chars_to_compare = MIN(s1_char_count, s2_char_count);
+        scf_string_iterator iter1 = scf_string_start(s1);
+        scf_string_iterator iter2 = scf_string_start(s2);
+        result = 0;
+        for (size_t i = 0; i < number_of_chars_to_compare && result == 0; i++) {
+            scf_char ch1, ch2;
+            scf_string_next(&iter1, &ch1);
+            scf_string_next(&iter2, &ch2);
+            result = scf_char_cmp(ch1, ch2);
+        }
+
+        if (result == 0) {
+            result = CMP(s1_char_count, s2_char_count);
+        }
+    }
+    
+    return result;
+}
+
 
 scf_string *scf_string_convert(const scf_string *s, scf_encoding target_encoding) {
     scf_operation *op = scf_get_operation(s->buf.data);
@@ -266,6 +309,17 @@ char *scf_string_to_cstr(const scf_string *s) {
     return result;
 }
 
+scf_string_iterator scf_string_iterator_at(const scf_string *s, int index) {
+    scf_string_iterator result = scf_string_start(s);
+    for (int i = 0; i < index; i++) {
+        if (!scf_string_next(&result,NULL)) {
+            break;
+        }
+    }
+    
+    return result;
+}
+
 scf_string *scf_substring(const scf_string_iterator *start, int char_count) {
     const scf_string *s = start->s;
     scf_operation *op = scf_get_operation(s->buf.data);
@@ -286,10 +340,11 @@ scf_string *scf_substring(const scf_string_iterator *start, int char_count) {
 
 
 // extern defs for inline functions
-extern void scf_string_append_char(scf_string *s, scf_char c);
+extern scf_string_iterator scf_string_start(const scf_string *s);
 extern scf_string *scf_utf8_string(scf_operation *op);
 extern void scf_string_free(scf_string *s);
-
+extern scf_string *scf_string_from_cstr(scf_operation *op, const char *cstr);
+extern scf_char scf_ascii(char c);
 
 
 

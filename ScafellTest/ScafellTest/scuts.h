@@ -69,6 +69,7 @@ do { \
 } while (0)
 
 #define ASSERT_EQ(a, b) (_Generic((b), \
+unsigned char: assert_eq_number(__FILE__, __LINE__, (long long)(a), (long long)(b)), \
 int: assert_eq_number(__FILE__, __LINE__, (long long)(a), (long long)(b)), \
 unsigned int: assert_eq_number(__FILE__, __LINE__, (long long)(a), (long long)(b)), \
 long: assert_eq_number(__FILE__, __LINE__, (long long)(a), (long long)(b)), \

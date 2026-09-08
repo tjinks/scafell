@@ -29,7 +29,7 @@ static int binary_search(scf_codepoint cpToFind) {
             end = nextTry;
         }
         
-        if (start == end - 1) {
+        if (start == end) {
             return -1;
         }
     }

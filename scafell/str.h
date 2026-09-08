@@ -15,18 +15,18 @@
 #include "os/osdefs.h"
 #include "mmgt.h"
 #include "err_handling.h"
+#include "ucdb.h"
 
 typedef enum {
     SCF_UTF8,
     SCF_UTF16_BE,
-    SCF_UTF16_LE,
-    SCF_UTF32
+    SCF_UTF16_LE
 } scf_encoding;
 
 typedef struct {
     scf_encoding encoding;
     int byte_count;
-    char bytes[4];
+    unsigned char bytes[4];
 } scf_char;
 
 typedef struct {
@@ -40,6 +40,17 @@ typedef struct {
     int index;
 } scf_string_iterator;
 
+scf_char scf_char_from_codepoint(scf_codepoint cp, scf_encoding enc);
+
+int scf_char_cmp(scf_char ch1, scf_char ch2);
+
+scf_codepoint scf_codepoint_from_char(scf_char ch);
+
+inline scf_char scf_ascii(char c) {
+    scf_char result = {SCF_UTF8, 1, (unsigned char)c};
+    return result;
+}
+
 scf_string *scf_string_with_encoding(scf_operation *op, scf_encoding encoding);
 
 inline scf_string *scf_utf8_string(scf_operation *op) {
@@ -47,6 +58,12 @@ inline scf_string *scf_utf8_string(scf_operation *op) {
 }
 
 scf_string *scf_string_from_bytes(scf_operation *op, const void *p, size_t byte_count, scf_encoding encoding);
+
+inline scf_string *scf_string_from_cstr(scf_operation *op, const char *cstr) {
+    return scf_string_from_bytes(op, cstr, strlen(cstr), SCF_UTF8);
+}
+
+int scf_string_cmp(const scf_string *s1, const scf_string *s2);
 
 scf_string *scf_string_convert(const scf_string *s, scf_encoding target_encoding);
 
@@ -63,7 +80,8 @@ bool scf_string_next(scf_string_iterator *iter, scf_char *c);
 scf_string_iterator scf_string_iterator_at(const scf_string *s, int index);
 
 inline scf_string_iterator scf_string_start(const scf_string *s) {
-    return scf_string_iterator_at(s, 0);
+    scf_string_iterator result = {s, 0};
+    return result;
 }
 
 inline void scf_string_free(scf_string *s) {
