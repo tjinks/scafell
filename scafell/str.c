@@ -183,6 +183,7 @@ int scf_char_cmp(scf_char ch1, scf_char ch2) {
 scf_string *scf_string_with_encoding(scf_operation *op, scf_encoding encoding) {
     scf_string *result = scf_alloc(op, sizeof(scf_string));
     result->encoding = encoding;
+    result->char_count = 0;
     result->buf = scf_buffer_create(op, 16);
     return result;
 }
@@ -250,7 +251,7 @@ bool scf_string_next(scf_string_iterator *iter, scf_char *c) {
     if (c) {
         c->encoding = iter->s->encoding;
         c->byte_count = byte_count;
-        memcpy(c->bytes, iter->s + iter->index, byte_count);
+        memcpy(c->bytes, iter->s->buf.data + iter->index, byte_count);
     }
 
     iter->index += byte_count;
@@ -267,7 +268,6 @@ void scf_string_append(scf_string *s1, const scf_string *s2) {
         scf_char ch;
         while (scf_string_next(&iter, &ch)) {
             scf_string_append_char(s1, ch);
-            s1->char_count++;
         }
     }
 }

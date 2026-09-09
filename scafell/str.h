@@ -86,6 +86,7 @@ inline scf_string_iterator scf_string_start(const scf_string *s) {
 
 inline void scf_string_free(scf_string *s) {
     scf_buffer_free(&s->buf);
+    scf_free(s);
 }
 
 #endif /* utf8_h */

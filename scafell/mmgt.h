@@ -42,6 +42,7 @@ void *scf_realloc(void *p, size_t required);
 void scf_free(void *p);
 void scf_complete(scf_operation *operation);
 scf_operation *scf_get_operation(const void *p);
+void scf_reassign(void *p, scf_operation *op);
 
 scf_buffer scf_buffer_create(scf_operation *operation, size_t initial_capacity);
 void scf_buffer_append_bytes(scf_buffer *buffer, const void *bytes_to_append, size_t byte_count);

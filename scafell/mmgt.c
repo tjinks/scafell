@@ -108,6 +108,12 @@ scf_operation *scf_get_operation(const void *p) {
     return get_block(p)->operation;
 }
 
+void scf_reassign(void *p, scf_operation *op) {
+    scf_mem_block *block = get_block(p);
+    remove_block(block);
+    add_block(op, block);
+}
+
 static void ensure_capacity(scf_buffer *buffer, size_t required) {
     if (buffer->capacity < required) {
         size_t new_capacity = 2 * buffer->capacity;
