@@ -62,4 +62,8 @@ inline void scf_buffer_free(scf_buffer *buf) {
     scf_free(buf->data);
 }
 
+#define SCF_DEREF(type, ptr) (*((type *)(ptr)))
+
+typedef int (*scf_comparison_func)(const void *, const void *);
+
 #endif /* mmgt_h */

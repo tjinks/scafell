@@ -11,11 +11,17 @@
 #include "list.h"
 #include "err_handling.h"
 
-static void ensure_capacity(scf_list *list, size_t minimum_capacity) {
+static void grow(scf_list *list, size_t minimum_capacity);
+
+static inline void ensure_capacity(scf_list *list, size_t minimum_capacity) {
     if (list->capacity >= minimum_capacity) {
         return;
     }
     
+    grow(list, minimum_capacity);
+}
+    
+static void grow(scf_list *list, size_t minimum_capacity) {
     size_t new_capacity = 2 * list->capacity;
     if (new_capacity < minimum_capacity) {
         new_capacity = minimum_capacity;
@@ -106,4 +112,9 @@ void scf_list_get(const scf_list *list, size_t index, void *item) {
 void scf_list_clear(scf_list *list) {
     list->size = 0;
 }
+
+void scf_list_sort(scf_list *list, scf_comparison_func cmp) {
+    qsort(list->items, list->size, list->element_size, cmp);
+}
+
 

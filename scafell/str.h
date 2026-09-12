@@ -12,10 +12,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "os/osdefs.h"
 #include "mmgt.h"
 #include "err_handling.h"
 #include "ucdb.h"
+#include "list.h"
 
 typedef enum {
     SCF_UTF8,
@@ -39,6 +39,10 @@ typedef struct {
     const scf_string *s;
     int index;
 } scf_string_iterator;
+
+typedef struct {
+    scf_list strings;
+} scf_stringlist;
 
 scf_char scf_char_from_codepoint(scf_codepoint cp, scf_encoding enc);
 
@@ -73,7 +77,7 @@ void scf_string_append_char(scf_string *s, scf_char c);
 
 char *scf_string_to_cstr(const scf_string *s);
 
-scf_string *scf_substring(const scf_string_iterator *start, int char_count);
+scf_string *scf_substring(scf_string_iterator start, int char_count);
 
 bool scf_string_next(scf_string_iterator *iter, scf_char *c);
 
@@ -84,9 +88,43 @@ inline scf_string_iterator scf_string_start(const scf_string *s) {
     return result;
 }
 
+scf_string *scf_string_clone(scf_operation *op, const scf_string *s);
+
 inline void scf_string_free(scf_string *s) {
     scf_buffer_free(&s->buf);
     scf_free(s);
+}
+
+scf_stringlist *scf_stringlist_create(scf_operation *op);
+
+void scf_stringlist_add(scf_stringlist *list, const scf_string *s);
+
+scf_string *scf_stringlist_get(const scf_stringlist *list, size_t index);
+
+scf_string *scf_stringlist_get_copy(scf_operation *op, const scf_stringlist *list, size_t index);
+
+void scf_stringlist_clear(scf_stringlist *list);
+
+void scf_stringlist_insert(scf_stringlist *list, const scf_string *s, size_t before);
+
+scf_string *scf_stringlist_remove(scf_stringlist *list, size_t index);
+
+void scf_stringlist_sort(scf_stringlist *list, scf_comparison_func cmp);
+
+inline void scf_stringlist_push(scf_stringlist *list, const scf_string *s) {
+    scf_stringlist_add(list, s);
+}
+
+inline scf_string *scf_stringlist_pop(scf_stringlist *list, const scf_string *s) {
+    return scf_stringlist_remove(list, list->strings.size - 1);
+}
+
+inline void scf_stringlist_add_cstr(scf_stringlist *list, const char *cstr) {
+    scf_stringlist_add(list, scf_string_from_cstr(scf_get_operation(list), cstr));
+}
+
+inline size_t scf_stringlist_size(const scf_stringlist *list) {
+    return list->strings.size;
 }
 
 #endif /* utf8_h */

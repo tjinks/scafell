@@ -167,7 +167,29 @@ bool test_remove_at_start(void) {
     && check_item(2, 3);
 
     return result;
+}
 
+static int cmp(const void *item1, const void *item2) {
+    int i1 = SCF_DEREF(int, item1);
+    int i2 = SCF_DEREF(int, item2);
+    return i1 - i2;
+}
+
+bool test_sort(void) {
+    for (int i = 10; i >= 0; i--) {
+        scf_list_add(&list, items + i);
+    }
+    
+    scf_list_sort(&list, cmp);
+    
+    bool result = true;
+    for (int i = 0; i <= 10; i++) {
+        int item;
+        scf_list_get(&list, i, &item);
+        result = result && ASSERT_EQ(i, item);
+    }
+    
+    return result;
 }
 
 BEGIN_TEST_GROUP(list_tests)
@@ -181,5 +203,6 @@ BEGIN_TEST_GROUP(list_tests)
     TEST(test_remove_at_end)
     TEST(test_remove_in_middle)
     TEST(test_remove_at_start)
+    TEST(test_sort)
 END_TEST_GROUP
 

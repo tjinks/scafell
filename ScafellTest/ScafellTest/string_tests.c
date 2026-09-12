@@ -314,12 +314,126 @@ bool test_string_append_utf8_utf16(void) {
 
 bool test_char_cmp(void) {
     scf_char utf8_pound = {SCF_UTF8, 2, {0xC2, 0xA3}};
-    scf_char utf8_one = scf_ascii("1");
+    scf_char utf8_one = scf_ascii('1');
     scf_char utf16_pound = {SCF_UTF16_BE, 2, {0x0, 0xA3}};
     return ASSERT_EQ(0, scf_char_cmp(utf8_pound, utf16_pound))
     && ASSERT_EQ(-1, scf_char_cmp(utf8_one, utf16_pound))
     && ASSERT_EQ(1, scf_char_cmp(utf16_pound, utf8_one))
     ;
+}
+
+bool test_string_cmp_same_encoding(void) {
+    scf_string *s1 = scf_string_from_cstr(&op, "abc");
+    scf_string *s2 = scf_string_from_cstr(&op, "abc");
+    scf_string *s3 = scf_string_from_cstr(&op, "abc£");
+    scf_string *s4 = scf_string_from_cstr(&op, "aa");
+    
+    return ASSERT_EQ(0, scf_string_cmp(s1, s2))
+    && ASSERT_EQ(-1, scf_string_cmp(s1, s3))
+    && ASSERT_EQ(1, scf_string_cmp(s3, s1))
+    && ASSERT_EQ(1, scf_string_cmp(s1, s4))
+    && ASSERT_EQ(-1, scf_string_cmp(s4, s1))
+    ;
+}
+
+bool test_string_cmp_different_encodings(void) {
+    scf_string *s1 = scf_string_from_cstr(&op, "abc");
+    scf_string *s2 = scf_string_convert(scf_string_from_cstr(&op, "abc"), SCF_UTF16_BE);
+    scf_string *s3 = scf_string_convert(scf_string_from_cstr(&op, "abc£"), SCF_UTF16_BE);
+    scf_string *s4 = scf_string_convert(scf_string_from_cstr(&op, "aa"), SCF_UTF16_LE);
+    
+    return ASSERT_EQ(0, scf_string_cmp(s1, s2))
+    && ASSERT_EQ(-1, scf_string_cmp(s1, s3))
+    && ASSERT_EQ(1, scf_string_cmp(s3, s1))
+    && ASSERT_EQ(1, scf_string_cmp(s1, s4))
+    && ASSERT_EQ(-1, scf_string_cmp(s4, s1))
+    ;
+}
+
+bool test_substring(void) {
+    scf_string *s = scf_string_from_cstr(&op, "abc £123");
+    scf_string_iterator iter = scf_string_iterator_at(s, 4);
+    scf_string *substring = scf_substring(iter, 3);
+    bool result = ASSERT_EQ(3, substring->char_count)
+    && ASSERT_EQ(4, substring->buf.size)
+    ;
+    
+    char *cstr = scf_string_to_cstr(substring);
+    result = result && ASSERT_EQ("£12", cstr);
+    return result;
+}
+
+bool test_string_clone(void) {
+    SCF_OPERATION(op1);
+    scf_string *s = scf_string_from_cstr(&op, "£123");
+    scf_string *clone = scf_string_clone(&op1, s);
+    bool result = ASSERT_FALSE(s == clone) && ASSERT_EQ("£123", scf_string_to_cstr(clone));
+    scf_complete(&op1);
+    return result;
+}
+
+bool test_stringlist_add_and_get(void) {
+    scf_stringlist *list = scf_stringlist_create(&op);
+    scf_stringlist_add(list, scf_string_from_cstr(&op, "s0"));
+    scf_stringlist_add(list, scf_string_from_cstr(&op, "s1"));
+    bool result = ASSERT_EQ(2, scf_stringlist_size(list));
+    scf_string *s0a = scf_stringlist_get(list, 0);
+    scf_string *s0b = scf_stringlist_get(list, 0);
+    scf_string *s1a = scf_stringlist_get(list, 1);
+    scf_string *s1b = scf_stringlist_get_copy(&op, list, 1);
+    result = result && ASSERT_EQ("s0", scf_string_to_cstr(s0a));
+    result = result && ASSERT_EQ("s0", scf_string_to_cstr(s0b));
+    result = result && ASSERT_EQ("s1", scf_string_to_cstr(s1a));
+    result = result && ASSERT_EQ("s1", scf_string_to_cstr(s1b));
+    
+    result = result && ASSERT_TRUE(s0a == s0b);
+    result = result && ASSERT_FALSE(s1a == s1b);
+
+    return result;
+}
+
+bool test_stringlist_insert(void) {
+    scf_stringlist *list = scf_stringlist_create(&op);
+    scf_stringlist_add_cstr(list, "abc");
+    scf_stringlist_add_cstr(list, "123");
+    scf_stringlist_insert(list, scf_string_from_cstr(&op, "ABC"), 1);
+    
+    bool result = ASSERT_EQ(3, scf_stringlist_size(list));
+    result = ASSERT_EQ("abc", scf_string_to_cstr(scf_stringlist_get(list, 0)));
+    result = ASSERT_EQ("ABC", scf_string_to_cstr(scf_stringlist_get(list, 1)));
+    result = ASSERT_EQ("123", scf_string_to_cstr(scf_stringlist_get(list, 2)));
+
+    return result;
+}
+
+bool test_stringlist_remove(void) {
+    scf_stringlist *list = scf_stringlist_create(&op);
+    scf_stringlist_add_cstr(list, "abc");
+    scf_stringlist_add_cstr(list, "123");
+    scf_stringlist_add_cstr(list, "xyz");
+    scf_stringlist_remove(list, 1);
+    
+    bool result = ASSERT_EQ(2, scf_stringlist_size(list));
+    result = ASSERT_EQ("abc", scf_string_to_cstr(scf_stringlist_get(list, 0)));
+    result = ASSERT_EQ("xyz", scf_string_to_cstr(scf_stringlist_get(list, 1)));
+
+    return result;
+}
+
+bool test_stringlist_sort(void) {
+    scf_stringlist *list = scf_stringlist_create(&op);
+    scf_stringlist_add_cstr(list, "abc");
+    scf_stringlist_add_cstr(list, "ab");
+    scf_stringlist_add_cstr(list, "123");
+    scf_stringlist_add_cstr(list, "ABC");
+    scf_stringlist_sort(list, NULL);
+    
+    bool result = ASSERT_EQ("123", scf_string_to_cstr(scf_stringlist_get(list, 0)));
+    result = ASSERT_EQ("ABC", scf_string_to_cstr(scf_stringlist_get(list, 1)));
+    result = ASSERT_EQ("ab", scf_string_to_cstr(scf_stringlist_get(list, 2)));
+    result = ASSERT_EQ("abc", scf_string_to_cstr(scf_stringlist_get(list, 3)));
+
+    return result;
 }
 
 BEGIN_TEST_GROUP(string_tests)
@@ -335,6 +449,14 @@ BEGIN_TEST_GROUP(string_tests)
     TEST(test_string_append_utf8_utf8)
     TEST(test_string_append_utf8_utf16)
     TEST(test_char_cmp)
+    TEST(test_string_cmp_same_encoding)
+    TEST(test_string_cmp_different_encodings)
+    TEST(test_substring)
+    TEST(test_string_clone)
+    TEST(test_stringlist_add_and_get)
+    TEST(test_stringlist_insert)
+    TEST(test_stringlist_remove)
+    TEST(test_stringlist_sort)
 /*
     TEST(test_char_info)
     TEST(test_invalid_char_info)

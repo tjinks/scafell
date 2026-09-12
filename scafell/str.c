@@ -14,6 +14,9 @@
 #define CMP(a, b) ((a) < (b) ? -1 : ((a) > (b) ? 1 : 0))
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
+static const int INITIAL_STRING_SIZE = 16;
+static const int INITIAL_STRINGLIST_SIZE = 16;
+
 static noreturn void invalid_encoding(void) {
     scf_raise_error(SCF_INVALID_STRING_OPERATION, "Unsupported character encoding");
 }
@@ -24,24 +27,21 @@ static scf_char utf8_char_from_codepoint(scf_codepoint cp) {
     
     if (cp <= 0x7F) {
         result.bytes[index++] = cp;
-        result.byte_count = index;
     } else if (cp <= 0x7FF) {
         result.bytes[index++] = 0xC0 + (cp >> 6);
         result.bytes[index++] = 0x80 + (cp & 0x3F);
-        result.byte_count = index;
     } else if (cp <= 0xFFFF) {
         result.bytes[index++] = 0xE0 + (cp >> 12);
         result.bytes[index++] = 0x80 + ((cp >> 6) & 0x3F);
         result.bytes[index++] = 0x80 + (cp & 0x3F);
-        result.byte_count = index;
     } else if (cp <= 0x10FFFF) {
         result.bytes[index++] = 0xF0 + (cp >> 18);
         result.bytes[index++] = 0x80 + ((cp >> 12) & 0x3F);
         result.bytes[index++] = 0x80 + ((cp >> 6) & 0x3F);
         result.bytes[index++] = 0x80 + (cp & 0x3F);
-        result.byte_count = index;
     }
     
+    result.byte_count = index;
     return result;
 }
 
@@ -184,7 +184,7 @@ scf_string *scf_string_with_encoding(scf_operation *op, scf_encoding encoding) {
     scf_string *result = scf_alloc(op, sizeof(scf_string));
     result->encoding = encoding;
     result->char_count = 0;
-    result->buf = scf_buffer_create(op, 16);
+    result->buf = scf_buffer_create(op, INITIAL_STRING_SIZE);
     return result;
 }
 
@@ -309,10 +309,17 @@ char *scf_string_to_cstr(const scf_string *s) {
     return result;
 }
 
+scf_string *scf_string_clone(scf_operation *op, const scf_string *s) {
+    scf_string *result = scf_string_with_encoding(op, s->encoding);
+    scf_buffer_append(&result->buf, &s->buf);
+    result->char_count = s->char_count;
+    return result;
+}
+
 scf_string_iterator scf_string_iterator_at(const scf_string *s, int index) {
     scf_string_iterator result = scf_string_start(s);
     for (int i = 0; i < index; i++) {
-        if (!scf_string_next(&result,NULL)) {
+        if (!scf_string_next(&result, NULL)) {
             break;
         }
     }
@@ -320,11 +327,11 @@ scf_string_iterator scf_string_iterator_at(const scf_string *s, int index) {
     return result;
 }
 
-scf_string *scf_substring(const scf_string_iterator *start, int char_count) {
-    const scf_string *s = start->s;
+scf_string *scf_substring(scf_string_iterator start, int char_count) {
+    const scf_string *s = start.s;
     scf_operation *op = scf_get_operation(s->buf.data);
     scf_string *result = scf_string_with_encoding(op, s->encoding);
-    scf_string_iterator iter = *start;
+    scf_string_iterator iter = start;
     for (int i = 0; i < char_count; i++) {
         scf_char ch;
         if (!scf_string_next(&iter, &ch)) {
@@ -337,6 +344,57 @@ scf_string *scf_substring(const scf_string_iterator *start, int char_count) {
     return result;
 }
 
+scf_stringlist *scf_stringlist_create(scf_operation *op) {
+    scf_stringlist *result = scf_alloc(op, sizeof(scf_stringlist));
+    result->strings = scf_list_create(op, sizeof(scf_string *), INITIAL_STRINGLIST_SIZE);
+    return result;
+}
+
+void scf_stringlist_add(scf_stringlist *list, const scf_string *s) {
+    scf_string *clone = scf_string_clone(scf_get_operation(list), s);
+    scf_list_add(&list->strings, &clone);
+}
+
+scf_string *scf_stringlist_get(const scf_stringlist *list, size_t index) {
+    scf_string *result;
+    scf_list_get(&list->strings, index, &result);
+    return result;
+}
+
+scf_string *scf_stringlist_get_copy(scf_operation *op, const scf_stringlist *list, size_t index) {
+    return scf_string_clone(op, scf_stringlist_get(list, index));
+}
+
+
+void scf_stringlist_clear(scf_stringlist *list) {
+    scf_list_clear(&list->strings);
+}
+
+void scf_stringlist_insert(scf_stringlist *list, const scf_string *s, size_t before) {
+    scf_string *clone = scf_string_clone(scf_get_operation(list), s);
+    scf_list_insert(&list->strings, &clone, before);
+}
+
+scf_string *scf_stringlist_remove(scf_stringlist *list, size_t index) {
+    scf_string *result = scf_stringlist_get(list, index);
+    scf_list_remove(&list->strings, index);
+    return result;
+}
+
+static int default_comparison_func(const void *p1, const void *p2) {
+    const scf_string *s1 = SCF_DEREF(const scf_string *, p1);
+    const scf_string *s2 = SCF_DEREF(const scf_string *, p2);
+    return scf_string_cmp(s1, s2);
+}
+
+void scf_stringlist_sort(scf_stringlist *list, scf_comparison_func cmp) {
+    if (cmp == NULL) {
+        cmp = default_comparison_func;
+    }
+    
+    scf_list_sort(&list->strings, cmp);
+}
+
 
 
 // extern defs for inline functions
@@ -345,6 +403,9 @@ extern scf_string *scf_utf8_string(scf_operation *op);
 extern void scf_string_free(scf_string *s);
 extern scf_string *scf_string_from_cstr(scf_operation *op, const char *cstr);
 extern scf_char scf_ascii(char c);
-
+extern void scf_stringlist_push(scf_stringlist *list, const scf_string *s);
+extern scf_string *scf_stringlist_pop(scf_stringlist *list, const scf_string *s);
+extern void scf_stringlist_add_cstr(scf_stringlist *list, const char *cstr);
+extern size_t scf_stringlist_size(const scf_stringlist *list);
 
 

@@ -37,4 +37,7 @@ void scf_list_clear(scf_list *list);
 
 void scf_list_get(const scf_list *list, size_t index, void *item);
 
+void scf_list_sort(scf_list *list, scf_comparison_func);
+
+
 #endif /* list_h */
