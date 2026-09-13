@@ -180,6 +180,36 @@ int scf_char_cmp(scf_char ch1, scf_char ch2) {
     return CMP(cp1, cp2);
 }
 
+scf_char scf_char_to_lower(scf_char ch) {
+    scf_codepoint cp = scf_codepoint_from_char(ch);
+    scf_char_info info = scf_get_char_info(cp);
+    if (info.category == UC_NONE) {
+        return ch;
+    } else {
+        return scf_char_from_codepoint(info.lc_codepoint, ch.encoding);
+    }
+}
+
+int scf_char_to_int(scf_char ch) {
+    scf_codepoint cp = scf_codepoint_from_char(ch);
+    scf_char_info info = scf_get_char_info(cp);
+    if (info.category == UC_NONE) {
+        return -1;
+    } else {
+        return info.digit_value;
+    }
+}
+
+scf_char scf_char_to_upper(scf_char ch) {
+    scf_codepoint cp = scf_codepoint_from_char(ch);
+    scf_char_info info = scf_get_char_info(cp);
+    if (info.category == UC_NONE) {
+        return ch;
+    } else {
+        return scf_char_from_codepoint(info.uc_codepoint, ch.encoding);
+    }
+}
+
 scf_string *scf_string_with_encoding(scf_operation *op, scf_encoding encoding) {
     scf_string *result = scf_alloc(op, sizeof(scf_string));
     result->encoding = encoding;
@@ -272,6 +302,16 @@ void scf_string_append(scf_string *s1, const scf_string *s2) {
     }
 }
 
+void scf_string_append_cstr(scf_string *s, const char *cstr) {
+    SCF_OPERATION(op);
+    scf_string_append(s, scf_string_from_cstr(&op, cstr));
+    scf_complete(&op);
+}
+
+void scf_string_append_ascii(scf_string *s, char ascii) {
+    scf_string_append_char(s, scf_ascii(ascii));
+}
+
 scf_string *scf_string_from_bytes(scf_operation *op, const void *p, size_t byte_count, scf_encoding encoding) {
     scf_string *result = scf_alloc(op, sizeof(scf_string));
     result->encoding = encoding;
@@ -310,6 +350,7 @@ char *scf_string_to_cstr(const scf_string *s) {
 }
 
 scf_string *scf_string_clone(scf_operation *op, const scf_string *s) {
+    op = op ? op : scf_get_operation(s);
     scf_string *result = scf_string_with_encoding(op, s->encoding);
     scf_buffer_append(&result->buf, &s->buf);
     result->char_count = s->char_count;
@@ -404,7 +445,7 @@ extern void scf_string_free(scf_string *s);
 extern scf_string *scf_string_from_cstr(scf_operation *op, const char *cstr);
 extern scf_char scf_ascii(char c);
 extern void scf_stringlist_push(scf_stringlist *list, const scf_string *s);
-extern scf_string *scf_stringlist_pop(scf_stringlist *list, const scf_string *s);
+extern scf_string *scf_stringlist_pop(scf_stringlist *list);
 extern void scf_stringlist_add_cstr(scf_stringlist *list, const char *cstr);
 extern size_t scf_stringlist_size(const scf_stringlist *list);
 

@@ -50,6 +50,12 @@ int scf_char_cmp(scf_char ch1, scf_char ch2);
 
 scf_codepoint scf_codepoint_from_char(scf_char ch);
 
+scf_char scf_char_to_lower(scf_char ch);
+
+scf_char scf_char_to_upper(scf_char ch);
+
+int scf_char_to_int(scf_char ch);
+
 inline scf_char scf_ascii(char c) {
     scf_char result = {SCF_UTF8, 1, (unsigned char)c};
     return result;
@@ -72,6 +78,10 @@ int scf_string_cmp(const scf_string *s1, const scf_string *s2);
 scf_string *scf_string_convert(const scf_string *s, scf_encoding target_encoding);
 
 void scf_string_append(scf_string *s1, const scf_string *s2);
+
+void scf_string_append_cstr(scf_string *s, const char *cstr);
+
+void scf_string_append_ascii(scf_string *s, char ascii);
 
 void scf_string_append_char(scf_string *s, scf_char c);
 
@@ -115,7 +125,7 @@ inline void scf_stringlist_push(scf_stringlist *list, const scf_string *s) {
     scf_stringlist_add(list, s);
 }
 
-inline scf_string *scf_stringlist_pop(scf_stringlist *list, const scf_string *s) {
+inline scf_string *scf_stringlist_pop(scf_stringlist *list) {
     return scf_stringlist_remove(list, list->strings.size - 1);
 }
 

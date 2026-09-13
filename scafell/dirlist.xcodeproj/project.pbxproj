@@ -6,169 +6,142 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		EA91BF6E305574AD00EC3451 /* libscafell.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EA91BF6D305574AD00EC3451 /* libscafell.a */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		EA91BF4F305573FF00EC3451 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
-		EA082FC82E09510F00C0F207 /* ScafellTest.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ScafellTest.xcodeproj; path = ScafellTest/ScafellTest.xcodeproj; sourceTree = "<group>"; };
-		EA707A062E0006A20084BFDD /* libscafell.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libscafell.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		EA70A1B82E16AE8E0030BE17 /* CMakeLists.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
-		EA91BF5B305573FF00EC3451 /* dirlist.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = dirlist.xcodeproj; sourceTree = "<group>"; };
+		EA91BF51305573FF00EC3451 /* dirlist */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = dirlist; sourceTree = BUILT_PRODUCTS_DIR; };
+		EA91BF6D305574AD00EC3451 /* libscafell.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libscafell.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		EA70A1B12E16AD840030BE17 /* Exceptions for "scafell" folder in "scafell" target */ = {
+		EA91BF693055745A00EC3451 /* Exceptions for "dirlist" folder in "dirlist" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				unicode_data.h,
+				main.c,
 			);
-			target = EA707A052E0006A20084BFDD /* scafell */;
+			target = EA91BF50305573FF00EC3451 /* dirlist */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
-/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
-		EA70A1B22E16AD840030BE17 /* Exceptions for "scafell" folder in "Compile Sources" phase from "scafell" target */ = {
-			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
-			buildPhase = EA707A032E0006A20084BFDD /* Sources */;
-			membershipExceptions = (
-				unicode_data.h,
-			);
-		};
-/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		EA70A1AD2E16AD600030BE17 /* scafell */ = {
+		EA91BF653055743800EC3451 /* dirlist */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				EA70A1B12E16AD840030BE17 /* Exceptions for "scafell" folder in "scafell" target */,
-				EA70A1B22E16AD840030BE17 /* Exceptions for "scafell" folder in "Compile Sources" phase from "scafell" target */,
+				EA91BF693055745A00EC3451 /* Exceptions for "dirlist" folder in "dirlist" target */,
 			);
-			path = scafell;
+			path = dirlist;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		EA707A042E0006A20084BFDD /* Frameworks */ = {
+		EA91BF4E305573FF00EC3451 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EA91BF6E305574AD00EC3451 /* libscafell.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		EA19E4DE2E0952F90058746D /* Products */ = {
+		EA91BF48305573FF00EC3451 = {
 			isa = PBXGroup;
 			children = (
+				EA91BF653055743800EC3451 /* dirlist */,
+				EA91BF6C305574AD00EC3451 /* Frameworks */,
+				EA91BF52305573FF00EC3451 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		EA91BF52305573FF00EC3451 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				EA91BF51305573FF00EC3451 /* dirlist */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		EA7079FD2E0006A20084BFDD = {
+		EA91BF6C305574AD00EC3451 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				EA70A1B82E16AE8E0030BE17 /* CMakeLists.txt */,
-				EA70A1AD2E16AD600030BE17 /* scafell */,
-				EA082FC82E09510F00C0F207 /* ScafellTest.xcodeproj */,
-				EA707A072E0006A20084BFDD /* Products */,
+				EA91BF6D305574AD00EC3451 /* libscafell.a */,
 			);
-			sourceTree = "<group>";
-		};
-		EA707A072E0006A20084BFDD /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				EA707A062E0006A20084BFDD /* libscafell.a */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		EA91BF5C305573FF00EC3451 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Products;
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
-/* Begin PBXHeadersBuildPhase section */
-		EA707A022E0006A20084BFDD /* Headers */ = {
-			isa = PBXHeadersBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXHeadersBuildPhase section */
-
 /* Begin PBXNativeTarget section */
-		EA707A052E0006A20084BFDD /* scafell */ = {
+		EA91BF50305573FF00EC3451 /* dirlist */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = EA707A0A2E0006A20084BFDD /* Build configuration list for PBXNativeTarget "scafell" */;
+			buildConfigurationList = EA91BF58305573FF00EC3451 /* Build configuration list for PBXNativeTarget "dirlist" */;
 			buildPhases = (
-				EA707A022E0006A20084BFDD /* Headers */,
-				EA707A032E0006A20084BFDD /* Sources */,
-				EA707A042E0006A20084BFDD /* Frameworks */,
+				EA91BF4D305573FF00EC3451 /* Sources */,
+				EA91BF4E305573FF00EC3451 /* Frameworks */,
+				EA91BF4F305573FF00EC3451 /* CopyFiles */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
-			fileSystemSynchronizedGroups = (
-				EA70A1AD2E16AD600030BE17 /* scafell */,
-			);
-			name = scafell;
+			name = dirlist;
 			packageProductDependencies = (
 			);
-			productName = scafell;
-			productReference = EA707A062E0006A20084BFDD /* libscafell.a */;
-			productType = "com.apple.product-type.library.static";
+			productName = dirlist;
+			productReference = EA91BF51305573FF00EC3451 /* dirlist */;
+			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		EA7079FE2E0006A20084BFDD /* Project object */ = {
+		EA91BF49305573FF00EC3451 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastUpgradeCheck = 2660;
 				TargetAttributes = {
-					EA707A052E0006A20084BFDD = {
-						CreatedOnToolsVersion = 16.2;
-						LastSwiftMigration = 1620;
+					EA91BF50305573FF00EC3451 = {
+						CreatedOnToolsVersion = 26.6;
 					};
 				};
 			};
-			buildConfigurationList = EA707A012E0006A20084BFDD /* Build configuration list for PBXProject "scafell" */;
+			buildConfigurationList = EA91BF4C305573FF00EC3451 /* Build configuration list for PBXProject "dirlist" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
 			);
-			mainGroup = EA7079FD2E0006A20084BFDD;
+			mainGroup = EA91BF48305573FF00EC3451;
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
-			productRefGroup = EA707A072E0006A20084BFDD /* Products */;
+			productRefGroup = EA91BF52305573FF00EC3451 /* Products */;
 			projectDirPath = "";
-			projectReferences = (
-				{
-					ProductGroup = EA91BF5C305573FF00EC3451 /* Products */;
-					ProjectRef = EA91BF5B305573FF00EC3451 /* dirlist.xcodeproj */;
-				},
-				{
-					ProductGroup = EA19E4DE2E0952F90058746D /* Products */;
-					ProjectRef = EA082FC82E09510F00C0F207 /* ScafellTest.xcodeproj */;
-				},
-			);
 			projectRoot = "";
 			targets = (
-				EA707A052E0006A20084BFDD /* scafell */,
+				EA91BF50305573FF00EC3451 /* dirlist */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
-		EA707A032E0006A20084BFDD /* Sources */ = {
+		EA91BF4D305573FF00EC3451 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -178,7 +151,7 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		EA707A082E0006A20084BFDD /* Debug */ = {
+		EA91BF56305573FF00EC3451 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -212,7 +185,6 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 4252B3HDL2;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -233,16 +205,15 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 15.2;
+				MACOSX_DEPLOYMENT_TARGET = 26.5;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 			};
 			name = Debug;
 		};
-		EA707A092E0006A20084BFDD /* Release */ = {
+		EA91BF57305573FF00EC3451 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -276,7 +247,6 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 4252B3HDL2;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -291,63 +261,57 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 15.2;
+				MACOSX_DEPLOYMENT_TARGET = 26.5;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 			};
 			name = Release;
 		};
-		EA707A0B2E0006A20084BFDD /* Debug */ = {
+		EA91BF59305573FF00EC3451 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				DEAD_CODE_STRIPPING = YES;
-				EXECUTABLE_PREFIX = lib;
+				DEVELOPMENT_TEAM = 4252B3HDL2;
+				ENABLE_HARDENED_RUNTIME = YES;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../scafell";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 6.0;
 			};
 			name = Debug;
 		};
-		EA707A0C2E0006A20084BFDD /* Release */ = {
+		EA91BF5A305573FF00EC3451 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				DEAD_CODE_STRIPPING = YES;
-				EXECUTABLE_PREFIX = lib;
+				DEVELOPMENT_TEAM = 4252B3HDL2;
+				ENABLE_HARDENED_RUNTIME = YES;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../scafell";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 6.0;
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		EA707A012E0006A20084BFDD /* Build configuration list for PBXProject "scafell" */ = {
+		EA91BF4C305573FF00EC3451 /* Build configuration list for PBXProject "dirlist" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				EA707A082E0006A20084BFDD /* Debug */,
-				EA707A092E0006A20084BFDD /* Release */,
+				EA91BF56305573FF00EC3451 /* Debug */,
+				EA91BF57305573FF00EC3451 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		EA707A0A2E0006A20084BFDD /* Build configuration list for PBXNativeTarget "scafell" */ = {
+		EA91BF58305573FF00EC3451 /* Build configuration list for PBXNativeTarget "dirlist" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				EA707A0B2E0006A20084BFDD /* Debug */,
-				EA707A0C2E0006A20084BFDD /* Release */,
+				EA91BF59305573FF00EC3451 /* Debug */,
+				EA91BF5A305573FF00EC3451 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
-	rootObject = EA7079FE2E0006A20084BFDD /* Project object */;
+	rootObject = EA91BF49305573FF00EC3451 /* Project object */;
 }
