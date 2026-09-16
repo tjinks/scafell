@@ -41,8 +41,8 @@ void mmgt_init(void) {
 
 bool test_alloc_and_free(void) {
     SCF_OPERATION(op);
-    alloc1 = scf_alloc_with_cleanup(&op, cleanup, 10);
-    alloc2 = scf_alloc_with_cleanup(&op, cleanup, 20);
+    alloc1 = scf_alloc_with_cleanup(&op, 10, cleanup);
+    alloc2 = scf_alloc_with_cleanup(&op, 20, cleanup);
     scf_complete(&op);
     
     return
@@ -53,9 +53,9 @@ bool test_alloc_and_free(void) {
 
 bool test_realloc(void) {
     SCF_OPERATION(op);
-    alloc1 = scf_alloc_with_cleanup(&op, cleanup, 10);
+    alloc1 = scf_alloc_with_cleanup(&op, 10, cleanup);
     memcpy(alloc1, "0123456789", 10);
-    alloc2 = scf_alloc_with_cleanup(&op, cleanup, 20);
+    alloc2 = scf_alloc_with_cleanup(&op, 20, cleanup);
     alloc3 = scf_realloc(alloc1, 30);
     bool result = ASSERT_EQ(0, memcmp(alloc3, "0123456789", 10));
     scf_complete(&op);

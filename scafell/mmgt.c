@@ -60,10 +60,10 @@ static void remove_block(scf_mem_block *block) {
 }
 
 void *scf_alloc(scf_operation *operation, size_t required) {
-    return scf_alloc_with_cleanup(operation, NULL, required);
+    return scf_alloc_with_cleanup(operation, required, NULL);
 }
 
-void *scf_alloc_with_cleanup(scf_operation *operation, scf_cleanup_func cleanup, size_t required) {
+void *scf_alloc_with_cleanup(scf_operation *operation, size_t required, scf_cleanup_func cleanup) {
     required += HEADER_SIZE;
     scf_mem_block *block = alloc_raw(NULL, required);
     block->cleanup = cleanup;

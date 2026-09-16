@@ -8,7 +8,11 @@
 #ifndef osunix_h
 #define osunix_h
 
+#define SCF_OS_UNIX
+
 typedef int scf_os_error_code;
+
+typedef int scf_os_file_handle;
 
 //typedef int scf_codepoint;
 

@@ -37,7 +37,7 @@ typedef struct {
 } scf_buffer;
 
 void *scf_alloc(scf_operation *operation, size_t required);
-void *scf_alloc_with_cleanup(scf_operation *operation, scf_cleanup_func cleanup, size_t required);
+void *scf_alloc_with_cleanup(scf_operation *operation, size_t required, scf_cleanup_func cleanup);
 void *scf_realloc(void *p, size_t required);
 void scf_free(void *p);
 void scf_complete(scf_operation *operation);
@@ -63,6 +63,8 @@ inline void scf_buffer_free(scf_buffer *buf) {
 }
 
 #define SCF_DEREF(type, ptr) (*((type *)(ptr)))
+#define SCF_ALLOC(operation, type) (scf_alloc((op), sizeof(type)))
+
 
 typedef int (*scf_comparison_func)(const void *, const void *);
 
