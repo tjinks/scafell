@@ -9,33 +9,35 @@
 #define list_h
 
 #include <stdlib.h>
-#include "datum.h"
+#include <stdbool.h>
 #include "mmgt.h"
 
 typedef struct {
     size_t size;
+    size_t element_size;
     size_t capacity;
-    scf_datum *items;
+    char *items;
 } scf_list;
 
-scf_list scf_list_create(scf_operation *operation, size_t initial_capacity);
+scf_list scf_list_create(scf_operation *operation, size_t element_size, size_t initial_capacity);
 
-void scf_list_add(scf_list *list, scf_datum new_item);
+void scf_list_add(scf_list *list, void *new_item);
 
 void scf_list_append(scf_list *list1, const scf_list *list2);
 
-void scf_list_insert(scf_list *list, scf_datum new_item, size_t before);
+void scf_list_insert(scf_list *list, void *new_item, size_t before);
 
 void scf_list_remove(scf_list *list, size_t index);
 
-void scf_push(scf_list *list, scf_datum item);
+void scf_push(scf_list *list, void *item);
 
-scf_datum scf_pop(scf_list *list);
+bool scf_pop(scf_list *list, void *item);
 
 void scf_list_clear(scf_list *list);
 
-typedef bool (*scf_for_each_func)(scf_datum *datum, void *iteration_context);
+void scf_list_get(const scf_list *list, size_t index, void *item);
 
-bool scf_list_for_each(scf_list *list, scf_for_each_func callback, void *iteration_context);
+void scf_list_sort(scf_list *list, scf_comparison_func);
+
 
 #endif /* list_h */

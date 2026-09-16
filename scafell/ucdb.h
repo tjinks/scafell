@@ -1,7 +1,7 @@
 #ifndef ucdb_h
 #define ucdb_h
 
-#include "str.h"
+#include <stdint.h>
 
 typedef enum {
     UC_LETTER = 0x8
@@ -14,18 +14,17 @@ typedef enum {
     ,UC_NONE = 0x00
 } scf_char_category;
 
-
-
 typedef struct {
-    utf8_char base, lower, upper, title;
     int codepoint;
-    int digit_value;
     scf_char_category category;
+    int digit_value;
+    int uc_codepoint;
+    int lc_codepoint;
+    int tc_codepoint;
 } scf_char_info;
 
-void scf_ucdb_init(void);
-void scf_ucdb_close(void);
+typedef int32_t scf_codepoint;
 
-const scf_char_info scf_get_char_info(utf8_char ch);
+scf_char_info scf_get_char_info(scf_codepoint ch);
 
 #endif /* ucdb_h */

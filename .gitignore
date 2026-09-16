@@ -1,4 +1,3 @@
-.vs
-out
-**/xcuserdata
 .DS_Store
+out
+xcuserdata/

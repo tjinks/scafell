@@ -60,10 +60,10 @@ static void remove_block(scf_mem_block *block) {
 }
 
 void *scf_alloc(scf_operation *operation, size_t required) {
-    return scf_alloc_with_cleanup(operation, NULL, required);
+    return scf_alloc_with_cleanup(operation, required, NULL);
 }
 
-void *scf_alloc_with_cleanup(scf_operation *operation, scf_cleanup_func cleanup, size_t required) {
+void *scf_alloc_with_cleanup(scf_operation *operation, size_t required, scf_cleanup_func cleanup) {
     required += HEADER_SIZE;
     scf_mem_block *block = alloc_raw(NULL, required);
     block->cleanup = cleanup;
@@ -78,6 +78,12 @@ void *scf_realloc(void *p, size_t required) {
     scf_mem_block *new_block = alloc_raw(original_block, required + HEADER_SIZE);
     add_block(operation, new_block);
     return new_block->data;
+}
+
+void scf_free(void *p) {
+    scf_mem_block *block = get_block(p);
+    remove_block(block);
+    free(p);
 }
 
 void scf_complete(scf_operation *operation) {
@@ -100,6 +106,12 @@ void scf_complete(scf_operation *operation) {
 
 scf_operation *scf_get_operation(const void *p) {
     return get_block(p)->operation;
+}
+
+void scf_reassign(void *p, scf_operation *op) {
+    scf_mem_block *block = get_block(p);
+    remove_block(block);
+    add_block(op, block);
 }
 
 static void ensure_capacity(scf_buffer *buffer, size_t required) {
@@ -155,6 +167,8 @@ scf_buffer scf_buffer_extract(const scf_buffer *buffer, size_t starting_from, si
 extern void scf_buffer_append(scf_buffer *buf1, const scf_buffer *buf2);
 
 extern void scf_buffer_insert(scf_buffer *buf1, scf_buffer *buf2, size_t before);
+
+extern void scf_buffer_free(scf_buffer *buf);
 
 
 

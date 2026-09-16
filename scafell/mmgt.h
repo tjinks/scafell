@@ -37,10 +37,12 @@ typedef struct {
 } scf_buffer;
 
 void *scf_alloc(scf_operation *operation, size_t required);
-void *scf_alloc_with_cleanup(scf_operation *operation, scf_cleanup_func cleanup, size_t required);
+void *scf_alloc_with_cleanup(scf_operation *operation, size_t required, scf_cleanup_func cleanup);
 void *scf_realloc(void *p, size_t required);
+void scf_free(void *p);
 void scf_complete(scf_operation *operation);
 scf_operation *scf_get_operation(const void *p);
+void scf_reassign(void *p, scf_operation *op);
 
 scf_buffer scf_buffer_create(scf_operation *operation, size_t initial_capacity);
 void scf_buffer_append_bytes(scf_buffer *buffer, const void *bytes_to_append, size_t byte_count);
@@ -55,5 +57,15 @@ inline void scf_buffer_append(scf_buffer *buf1, const scf_buffer *buf2) {
 inline void scf_buffer_insert(scf_buffer *buf1, scf_buffer *buf2, size_t before) {
     scf_buffer_insert_bytes(buf1, buf2->data, before, buf2->size);
 }
+
+inline void scf_buffer_free(scf_buffer *buf) {
+    scf_free(buf->data);
+}
+
+#define SCF_DEREF(type, ptr) (*((type *)(ptr)))
+#define SCF_ALLOC(operation, type) (scf_alloc((op), sizeof(type)))
+
+
+typedef int (*scf_comparison_func)(const void *, const void *);
 
 #endif /* mmgt_h */

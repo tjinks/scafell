@@ -45,6 +45,7 @@ scuts_test *scuts_add_test(scuts_test_group *tg, const char *name, scuts_test_fu
     return result;
 }
 
+#ifdef xxx
 static scuts_test_group *find_test_group(const char *name) {
     for (scuts_test_group *tg = scuts_tests; tg; tg = tg->next) {
         if (strcmp(tg->name, name) == 0) {
@@ -64,6 +65,7 @@ static scuts_test *find_test(const scuts_test_group *tg, const char *name) {
     
     return NULL;
 }
+#endif
 
 static void run_test(const scuts_test *test, scuts_test_run *run) {
     printf("%s...\n", test->name);
@@ -76,6 +78,7 @@ static void run_test(const scuts_test *test, scuts_test_run *run) {
 
 static void run_test_group(const scuts_test_group *tg, scuts_test_run *run) {
     const char *name = tg->name;
+    putc('\n', stdout);
     printf("Test Group: %s\n", name);
     printf("------------");
     for (int i = 0; name[i]; i++)

@@ -9,9 +9,10 @@
 #define osdefs_h
 
 #ifdef WIN32
-#include "os/oswin.h"
+#include "oswin.h"
 #endif
 
+// TODO - also need to include this for linux
 #ifdef __APPLE__
 #include "osunix.h"
 #endif
