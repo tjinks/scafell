@@ -18,7 +18,7 @@ static const int INITIAL_STRING_SIZE = 16;
 static const int INITIAL_STRINGLIST_SIZE = 16;
 
 static noreturn void invalid_encoding(void) {
-    scf_raise_error(SCF_INVALID_STRING_OPERATION, "Unsupported character encoding");
+    scf_raise_fatal_error(SCF_INVALID_STRING_OPERATION, "Unsupported character encoding");
 }
 
 static scf_char utf8_char_from_codepoint(scf_codepoint cp) {
@@ -86,7 +86,7 @@ static scf_codepoint codepoint_from_utf8_char(scf_char ch) {
             result += ch.bytes[3] & 0x3F;
             break;
         default:
-            scf_raise_error(SCF_INVALID_STRING_OPERATION, "Invalid byte count in utf8 character");
+            scf_raise_fatal_error(SCF_INVALID_STRING_OPERATION, "Invalid byte count in utf8 character");
     }
     
     return result;
@@ -94,7 +94,7 @@ static scf_codepoint codepoint_from_utf8_char(scf_char ch) {
 
 static scf_codepoint codepoint_from_utf16_char(scf_char ch) {
     if (ch.byte_count != 2) {
-        scf_raise_error(SCF_INVALID_STRING_OPERATION, "Invalid byte count in utf16 character");
+        scf_raise_fatal_error(SCF_INVALID_STRING_OPERATION, "Invalid byte count in utf16 character");
     }
     
     scf_codepoint bytes[] = {ch.bytes[0], ch.bytes[1]};

@@ -47,7 +47,7 @@ void scf_list_add(scf_list *list, void *new_item) {
 void scf_list_append(scf_list *list1, const scf_list *list2) {
     size_t element_size = list1->element_size;
     if (element_size != list2->element_size) {
-        scf_raise_error(SCF_LOGIC_ERROR, "Can't combine lists with different element size!");
+        scf_raise_fatal_error(SCF_LOGIC_ERROR, "Can't combine lists with different element size!");
     }
     
     ensure_capacity(list1, list1->size + list2->size);
@@ -57,7 +57,7 @@ void scf_list_append(scf_list *list1, const scf_list *list2) {
 
 void scf_list_insert(scf_list *list, void *new_item, size_t before) {
     if (before < 0 || before > list->size) {
-        scf_raise_error(SCF_BAD_INDEX, "Invalid index");
+        scf_raise_fatal_error(SCF_BAD_INDEX, "Invalid index");
     }
     
     size_t items_to_shift = list->size - before;
@@ -75,7 +75,7 @@ void scf_list_insert(scf_list *list, void *new_item, size_t before) {
 
 void scf_list_remove(scf_list *list, size_t index) {
     if (index < 0 || index >= list->size) {
-        scf_raise_error(SCF_BAD_INDEX, "Invalid index");
+        scf_raise_fatal_error(SCF_BAD_INDEX, "Invalid index");
     }
     
     size_t items_to_shift = (list->size - 1) - index;
@@ -103,7 +103,7 @@ bool scf_pop(scf_list *list, void *item) {
 
 void scf_list_get(const scf_list *list, size_t index, void *item) {
     if (index < 0 || index >= list->size) {
-        scf_raise_error(SCF_BAD_INDEX, "Invalid index passed to scf_list_get");
+        scf_raise_fatal_error(SCF_BAD_INDEX, "Invalid index passed to scf_list_get");
     }
     
     memcpy(item, list->items + list->element_size * index, list->element_size);

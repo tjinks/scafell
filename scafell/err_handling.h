@@ -12,21 +12,30 @@
 #include <stdbool.h>
 #include "os/osdefs.h"
 
+#define SCF_INTERNAL_ERR_START (1000)
+#define SCF_IO_ERR_START (2000)
+
 typedef enum {
     SCF_SUCCESS = 0
     
-    ,SCF_OUT_OF_MEMORY
+    ,SCF_OUT_OF_MEMORY = SCF_INTERNAL_ERR_START
     ,SCF_LOGIC_ERROR
-    ,SCF_OS_ERROR
     ,SCF_BAD_INDEX
     ,SCF_INVALID_STRING_OPERATION
-    ,SCF_EOF
+
+    ,SCF_IO_ERROR = SCF_IO_ERR_START
+    ,SCF_FILE_DOES_NOT_EXIST
+    ,SCF_ACCESS_DENIED
+    ,SCF_DEVICE_FULL
 } scf_error_code;
+
+#define SCF_MAX_ERR_MSG_SIZE (1000)
 
 typedef struct scf_err_info {
     scf_error_code code;
+    bool is_os_error;
     scf_os_error_code os_error_code;
-    const char *message;
+    char message[SCF_MAX_ERR_MSG_SIZE + 1];
 } scf_err_info;
 
 extern const scf_err_info scf_success;
@@ -37,14 +46,12 @@ inline bool scf_ok(scf_err_info info) {
 
 scf_err_info scf_err_info_create(scf_error_code, const char *msg);
 
-scf_err_info scf_os_err_info_create(scf_os_error_code);
+scf_err_info scf_os_err_info_create(scf_error_code scf_error, scf_os_error_code os_error);
 
-typedef void (*scf_err_handler)(const scf_err_info *err_info);
+typedef void (*scf_fatal_err_handler)(const scf_err_info *err_info);
 
-void scf_set_err_handler(scf_err_handler handler);
+void scf_set_fatal_err_handler(scf_fatal_err_handler handler);
 
-noreturn void scf_raise_error(scf_error_code code, const char *msg);
-
-noreturn void scf_raise_os_error(scf_os_error_code code, const char *msg);
+noreturn void scf_raise_fatal_error(scf_error_code code, const char *msg);
 
 #endif /* err_handling_h */

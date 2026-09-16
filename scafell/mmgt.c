@@ -16,8 +16,7 @@ static const int HEADER_SIZE = offsetof(scf_mem_block, data);
 static const int MIN_CAPACITY = 4;
 
 static void default_exhaustion_handler(void) {
-    fprintf(stderr, "Out of memory!\n");
-    exit(1);
+    scf_raise_fatal_error(SCF_OUT_OF_MEMORY, "Out of memory!");
 }
 
 scf_exhaustion_handler exhaustion_handler = default_exhaustion_handler;
@@ -136,7 +135,7 @@ void scf_buffer_append_bytes(scf_buffer *buffer, const void *bytes_to_append, si
 }
 
 void scf_buffer_insert_bytes(scf_buffer *buffer, const void *bytes_to_insert, size_t before, size_t byte_count) {
-    if (before > buffer->size) scf_raise_error(SCF_BAD_INDEX, "Invalid index");
+    if (before > buffer->size) scf_raise_fatal_error(SCF_BAD_INDEX, "Invalid index");
 
     if (byte_count == 0) return;
     
@@ -147,7 +146,7 @@ void scf_buffer_insert_bytes(scf_buffer *buffer, const void *bytes_to_insert, si
 }
 
 void scf_buffer_remove(scf_buffer *buffer, size_t starting_from, size_t byte_count) {
-    if (starting_from + byte_count > buffer->size) scf_raise_error(SCF_BAD_INDEX, "Attempting to remove more data than is present!");
+    if (starting_from + byte_count > buffer->size) scf_raise_fatal_error(SCF_BAD_INDEX, "Attempting to remove more data than is present!");
 
     if (byte_count == 0) return;
     
@@ -156,7 +155,7 @@ void scf_buffer_remove(scf_buffer *buffer, size_t starting_from, size_t byte_cou
 }
 
 scf_buffer scf_buffer_extract(const scf_buffer *buffer, size_t starting_from, size_t byte_count) {
-    if (starting_from + byte_count > buffer->size) scf_raise_error(SCF_BAD_INDEX, "Attempting to extract more data than is present!");
+    if (starting_from + byte_count > buffer->size) scf_raise_fatal_error(SCF_BAD_INDEX, "Attempting to extract more data than is present!");
 
     scf_buffer result = scf_buffer_create(scf_get_operation(buffer->data), byte_count);
     memcpy(result.data, buffer->data + starting_from, byte_count);
