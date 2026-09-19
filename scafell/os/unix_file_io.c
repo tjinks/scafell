@@ -8,86 +8,116 @@
 #include <errno.h>
 #include <unistd.h>
 #include "unix_file_io.h"
+#include "err_handling.h"
 
-#ifdef XXX
-
-static scf_err_info fill(scf_reader *reader) {
+static bool fill(scf_reader *reader, scf_err_context *ec) {
     int fd = SCF_DEREF(int, reader->additional_data);
     ssize_t read_count = read(fd, reader->buf.data, reader->buf.capacity);
     reader->index = 0;
     reader->buf.size = read_count;
     if (read_count == 0) {
-        return scf_err_info_create(SCF_EOF, "");
+        return false;
     }
     
     if (read_count == -1) {
-        return scf_os_err_info_create(errno);
+        scf_raise_error(scf_os_err_info_create(SCF_IO_ERROR, errno), ec);
     }
     
-    return scf_success;
+    return true;
 }
 
-static scf_err_info close_reader(scf_reader *reader) {
+static void close_reader(scf_reader *reader, scf_err_context *ec) {
     int fd = SCF_DEREF(int, reader->additional_data);
-    return close(fd) == 0 ? scf_success : scf_os_err_info_create(errno);
+    if (close(fd) == 0) {
+        return;
+    }
+    
+    scf_raise_error(scf_os_err_info_create(SCF_IO_ERROR, errno), ec);
 }
 
-static scf_err_info empty(scf_writer *writer) {
+static void empty(scf_writer *writer, scf_err_context *ec) {
     int fd = SCF_DEREF(int, writer->additional_data);
     ssize_t write_count = write(fd, writer->buf.data, writer->buf.size);
     
     if (write_count == -1) {
-        return scf_os_err_info_create(errno);
+        scf_raise_error(scf_os_err_info_create(SCF_IO_ERROR, errno), ec);
     }
     
     if (write_count < writer->buf.size) {
-        return scf_os_err_info_create(EIO);
+        scf_raise_error(scf_os_err_info_create(SCF_IO_ERROR, errno), ec);
+    }
+}
+
+static void close_writer(scf_writer *writer, scf_err_context *ec) {
+    int fd = SCF_DEREF(int, writer->additional_data);
+    if (close(fd) == 0) {
+        return;
     }
     
-    return scf_success;
+    scf_raise_error(scf_os_err_info_create(SCF_IO_ERROR, errno), ec);
 }
 
-static scf_err_info close_writer(scf_writer *writer) {
-    int fd = SCF_DEREF(int, writer->additional_data);
-    return close(fd) == 0 ? scf_success : scf_os_err_info_create(errno);
-}
-
-
-scf_err_info scf_os_file_reader_create(scf_operation *op,
-                                         const scf_string *path,
-                                         size_t buffer_size,
-                                         scf_reader **result) {
-    *result = NULL;
+void scf_os_file_reader_create(scf_operation *op,
+                               const scf_string *path,
+                               size_t buffer_size,
+                               scf_reader **result,
+                               scf_err_context *ec) {
     const char *path_as_cstr = scf_string_to_cstr(path);
     int *fd = SCF_ALLOC(op, int);
     *fd = open(path_as_cstr, O_RDONLY);
     if (*fd == -1) {
         switch (errno) {
             case EACCES:
-                return SCF_NO_ACCESS;
+                scf_raise_error(scf_os_err_info_create(SCF_ACCESS_DENIED, errno), ec);
             case ENOENT:
             case ENOTDIR:
-                return SCF_FILE_DOES_NOT_EXIST;
+                scf_raise_error(scf_os_err_info_create(SCF_FILE_DOES_NOT_EXIST, errno), ec);
             default:
-                return SCF_IO_ERROR;
-                
+                scf_raise_error(scf_os_err_info_create(SCF_IO_ERROR, errno), ec);
+
         }
     }
     
-    *result = SCF_ALLOC(op, scf_reader);
+    *result = scf_alloc_with_cleanup(op, sizeof(scf_reader), scf_cleanup_reader);
     (*result)->buf = scf_buffer_create(op, buffer_size);
     (*result)->fill = fill;
     (*result)->close = close_reader;
     (*result)->additional_data = fd;
-    return SCF_SUCCESS;
 }
 
-scf_error_code scf_os_file_writer_create(scf_operation *op,
-                                         const scf_string *path,
-                                         size_t buffer_size,
-                                         bool append,
-                                         scf_writer **result) {
+void scf_os_file_writer_create(scf_operation *op,
+                               const scf_string *path,
+                               size_t buffer_size,
+                               bool append,
+                               scf_writer **result,
+                               scf_err_context *ec) {
+    const char *path_as_cstr = scf_string_to_cstr(path);
+    int *fd = SCF_ALLOC(op, int);
+    int mode = O_WRONLY;
+    if (append) {
+        mode |= O_APPEND;
+    } else {
+        mode |= O_CREAT;
+    }
     
-}
+    *fd = open(path_as_cstr, mode);
+    if (*fd == -1) {
+        switch (errno) {
+            case EACCES:
+                scf_raise_error(scf_os_err_info_create(SCF_ACCESS_DENIED, errno), ec);
+            case ENOENT:
+            case ENOTDIR:
+                scf_raise_error(scf_os_err_info_create(SCF_FILE_DOES_NOT_EXIST, errno), ec);
+            default:
+                scf_raise_error(scf_os_err_info_create(SCF_IO_ERROR, errno), ec);
 
-#endif
+        }
+    }
+    
+    *result = scf_alloc_with_cleanup(op, sizeof(scf_writer), scf_cleanup_writer);
+    (*result)->buf = scf_buffer_create(op, buffer_size);
+    (*result)->empty = empty;
+    (*result)->close = close_writer;
+    (*result)->additional_data = fd;
+
+}

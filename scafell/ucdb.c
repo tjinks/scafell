@@ -50,4 +50,8 @@ scf_char_info scf_get_char_info(scf_codepoint cpToFind) {
     }
 }
 
+scf_codepoint scf_last_uc_codepoint(void) {
+    return uc_database[UC_CHAR_COUNT - 1].codepoint;
+}
+
 

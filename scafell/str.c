@@ -17,8 +17,29 @@
 static const int INITIAL_STRING_SIZE = 16;
 static const int INITIAL_STRINGLIST_SIZE = 16;
 
-static noreturn void invalid_encoding(void) {
-    scf_raise_fatal_error(SCF_INVALID_STRING_OPERATION, "Unsupported character encoding");
+static noreturn void unsupported_encoding(scf_err_context *ec) {
+    scf_raise_error(scf_err_info_create(SCF_INVALID_STRING_OPERATION, "Unsupported character encoding"), ec);
+}
+
+static noreturn void decoding_failure(scf_encoding enc, scf_err_context *ec) {
+    const char *msg = "";
+    switch (enc) {
+        case SCF_UTF8:
+            msg = "UTF8 decoding failure";
+            break;
+        case SCF_UTF16_BE:
+        case SCF_UTF16_LE:
+            msg = "UTF16 decoding failure";
+            break;
+        default:
+            unsupported_encoding(ec);
+    }
+    
+    scf_raise_error(scf_err_info_create(SCF_INVALID_STRING_OPERATION, msg), ec);
+}
+
+static noreturn void invalid_utf16_iterator(scf_err_context *ec) {
+    scf_raise_error(scf_err_info_create(SCF_INVALID_STRING_OPERATION, "Invalid UTF16 iterator"), ec);
 }
 
 static scf_char utf8_char_from_codepoint(scf_codepoint cp) {
@@ -105,7 +126,7 @@ static scf_codepoint codepoint_from_utf16_char(scf_char ch) {
     }
 }
 
-static int get_byte_count(const scf_string *s, int offset) {
+static int get_byte_count(const scf_string *s, size_t offset) {
     int result = -1;
     if (offset >= s->buf.size) goto invalid_offset;
     
@@ -140,7 +161,7 @@ static int get_byte_count(const scf_string *s, int offset) {
             result = 2;
             break;
         default:
-            invalid_encoding();
+            unsupported_encoding(NULL);
     }
     
     if (offset + result - 1 >= s->buf.size) goto invalid_offset;
@@ -150,7 +171,11 @@ invalid_offset:
     return -1;
 }
 
-scf_char scf_char_from_codepoint(scf_codepoint cp, scf_encoding enc) {
+scf_char scf_char_from_codepoint(scf_codepoint cp, scf_encoding enc, scf_err_context *ec) {
+    if (cp > scf_last_uc_codepoint()) {
+        scf_raise_error(scf_err_info_create(SCF_INVALID_STRING_OPERATION, "Invalid codepoint"), ec);
+    }
+    
     switch (enc) {
         case SCF_UTF8:
             return utf8_char_from_codepoint(cp);
@@ -158,7 +183,7 @@ scf_char scf_char_from_codepoint(scf_codepoint cp, scf_encoding enc) {
         case SCF_UTF16_LE:
             return utf16_char_from_codepoint(cp, enc);
         default:
-            invalid_encoding();
+            unsupported_encoding(NULL);
     }
 }
 
@@ -170,7 +195,7 @@ scf_codepoint scf_codepoint_from_char(scf_char ch) {
         case SCF_UTF16_LE:
             return codepoint_from_utf16_char(ch);
         default:
-            invalid_encoding();
+            unsupported_encoding(NULL);
     }
 }
 
@@ -186,7 +211,7 @@ scf_char scf_char_to_lower(scf_char ch) {
     if (info.category == UC_NONE) {
         return ch;
     } else {
-        return scf_char_from_codepoint(info.lc_codepoint, ch.encoding);
+        return scf_char_from_codepoint(info.lc_codepoint, ch.encoding, NULL);
     }
 }
 
@@ -206,7 +231,7 @@ scf_char scf_char_to_upper(scf_char ch) {
     if (info.category == UC_NONE) {
         return ch;
     } else {
-        return scf_char_from_codepoint(info.uc_codepoint, ch.encoding);
+        return scf_char_from_codepoint(info.uc_codepoint, ch.encoding, NULL);
     }
 }
 
@@ -223,7 +248,7 @@ void scf_string_append_char(scf_string *s, scf_char c) {
         scf_buffer_append_bytes(&s->buf, c.bytes, c.byte_count);
     } else {
         scf_codepoint cp = scf_codepoint_from_char(c);
-        scf_char converted = scf_char_from_codepoint(cp, s->encoding);
+        scf_char converted = scf_char_from_codepoint(cp, s->encoding, NULL);
         scf_buffer_append_bytes(&s->buf, converted.bytes, converted.byte_count);
     }
     
@@ -270,12 +295,16 @@ scf_string *scf_string_convert(const scf_string *s, scf_encoding target_encoding
     return result;
 }
 
-bool scf_string_next(scf_string_iterator *iter, scf_char *c) {
+static bool string_next(scf_string_iterator *iter, scf_char *c, scf_err_context *ec) {
+    if (iter->index == iter->s->buf.size) {
+        return false;
+    }
+    
     scf_char result;
     result.encoding = iter->s->encoding;
     int byte_count = get_byte_count(iter->s, iter->index);
     if (byte_count == -1) {
-        return false;
+        decoding_failure(iter->s->encoding, ec);
     }
     
     if (c) {
@@ -288,6 +317,81 @@ bool scf_string_next(scf_string_iterator *iter, scf_char *c) {
     return true;
 }
 
+bool scf_string_next(scf_string_iterator *iter, scf_char *c) {
+    return string_next(iter, c, NULL);
+}
+
+static void utf8_prev(scf_string_iterator *iter, scf_char *c) {
+    const unsigned char *data = iter->s->buf.data;
+    size_t index = iter->index;
+    c->encoding = SCF_UTF8;
+    unsigned char byte = data[--index];
+    if ((byte & 0x80) == 0) {
+        c->byte_count = 1;
+        goto done;
+    }
+
+    if ((byte & 0xC0) != 0x80) decoding_failure(SCF_UTF8, NULL);
+    if (index-- == 0) decoding_failure(SCF_UTF8, NULL);
+    byte = data[index];
+    if ((byte & 0xE0) == 0xC0) {
+        c->byte_count = 2;
+        goto done;
+    }
+    
+    if ((byte & 0xC0) != 0x80) decoding_failure(SCF_UTF8, NULL);
+    if (index-- == 0) decoding_failure(SCF_UTF8, NULL);
+    byte = data[index];
+    if ((byte & 0xF0) == 0xE0) {
+        c->byte_count = 3;
+        goto done;
+    }
+    
+    if ((byte & 0xC0) != 0x80) decoding_failure(SCF_UTF8, NULL);
+    if (index-- == 0) decoding_failure(SCF_UTF8, NULL);
+    byte = data[index];
+    if ((byte & 0xF8) == 0xF0) {
+        c->byte_count = 4;
+        goto done;
+    }
+    
+    decoding_failure(SCF_UTF8, NULL);
+done:
+    for (int i = 0; i < c->byte_count; i++) {
+        c->bytes[i] = data[index + i];
+    }
+    
+    iter->index = index;
+}
+
+static void utf16_prev(scf_string_iterator *iter, scf_char *c) {
+    if ((iter->index % 2) != 0) invalid_utf16_iterator(NULL);
+    c->encoding = iter->s->encoding;
+    iter->index -= 2;
+    c->byte_count = 2;
+    c->bytes[0] = iter->s->buf.data[iter->index];
+    c->bytes[1] = iter->s->buf.data[iter->index + 1];
+}
+
+bool scf_string_prev(scf_string_iterator *iter, scf_char *c) {
+    if (iter->index == 0) {
+        return false;
+    }
+
+    switch (iter->s->encoding) {
+        case SCF_UTF8:
+            utf8_prev(iter, c);
+            break;
+        case SCF_UTF16_BE:
+        case SCF_UTF16_LE:
+            utf16_prev(iter, c);
+            break;
+        default:
+            unsupported_encoding(NULL);
+    }
+    
+    return true;
+}
 
 void scf_string_append(scf_string *s1, const scf_string *s2) {
     if (s1->encoding == s2->encoding) {
@@ -312,14 +416,14 @@ void scf_string_append_ascii(scf_string *s, char ascii) {
     scf_string_append_char(s, scf_ascii(ascii));
 }
 
-scf_string *scf_string_from_bytes(scf_operation *op, const void *p, size_t byte_count, scf_encoding encoding) {
+scf_string *scf_string_from_bytes(scf_operation *op, const void *p, size_t byte_count, scf_encoding encoding, scf_err_context *ec) {
     scf_string *result = scf_alloc(op, sizeof(scf_string));
     result->encoding = encoding;
     result->buf = scf_buffer_create(op, byte_count);
     scf_buffer_append_bytes(&result->buf, p, byte_count);
     scf_string_iterator iter = scf_string_start(result);
     result->char_count = 0;
-    while (scf_string_next(&iter, NULL)) {
+    while (string_next(&iter, NULL, ec)) {
         result->char_count++;
     }
     

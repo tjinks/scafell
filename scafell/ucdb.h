@@ -27,4 +27,6 @@ typedef int32_t scf_codepoint;
 
 scf_char_info scf_get_char_info(scf_codepoint ch);
 
+scf_codepoint scf_last_uc_codepoint(void);
+
 #endif /* ucdb_h */
