@@ -42,6 +42,11 @@ static noreturn void invalid_utf16_iterator(scf_err_context *ec) {
     scf_raise_error(scf_err_info_create(SCF_INVALID_STRING_OPERATION, "Invalid UTF16 iterator"), ec);
 }
 
+static inline bool matches_mask(unsigned char byte, unsigned char mask) {
+    unsigned char mask2 = (mask >> 1) | 0x80;
+    return (byte & mask2) == mask;
+}
+
 static scf_char utf8_char_from_codepoint(scf_codepoint cp) {
     scf_char result = {SCF_UTF8, 0};
     int index = 0;
@@ -128,47 +133,31 @@ static scf_codepoint codepoint_from_utf16_char(scf_char ch) {
 
 static int get_byte_count(const scf_string *s, size_t offset) {
     int result = -1;
-    if (offset >= s->buf.size) goto invalid_offset;
+    if (offset >= s->buf.size) return -1;
     
-    switch (s->encoding) {
-        case SCF_UTF8: {
-            unsigned char disc = s->buf.data[offset] & 0xF8;
-            if (disc < 0x7F) {
-                result = 1;
-                break;
-            }
-            
-            if (disc >= 0xC0 && disc < 0xE0) {
-                result = 2;
-                break;
-            }
-            
-            if (disc >= 0xE0 && disc < 0xF0) {
-                result = 3;
-                break;
-            }
-            
-            if (disc >= 0xF0 && disc < 0xF8) {
-                result = 4;
-                break;
-            }
-            
-            break;
-        }
-            
-        case SCF_UTF16_BE:
-        case SCF_UTF16_LE:
-            result = 2;
-            break;
-        default:
-            unsupported_encoding(NULL);
+    unsigned char disc = s->buf.data[offset];
+    
+    if (disc <= 0x7F) {
+        return 1;
     }
     
-    if (offset + result - 1 >= s->buf.size) goto invalid_offset;
-    return result;
+    if (matches_mask(disc, 0xC0)) {
+        result = 2;
+    } else if (matches_mask(disc, 0xE0)) {
+        result = 3;
+    } else if (matches_mask(disc, 0xF0)) {
+        result = 4;
+    } else {
+        return -1;
+    }
     
-invalid_offset:
-    return -1;
+    if (offset + result > s->buf.size) return -1;
+
+    for (int i = 1; i < result; i++) {
+        if (!matches_mask(s->buf.data[offset + 1], 0x80)) return -1;
+    }
+    
+    return result;
 }
 
 scf_char scf_char_from_codepoint(scf_codepoint cp, scf_encoding enc, scf_err_context *ec) {
@@ -235,63 +224,48 @@ scf_char scf_char_to_upper(scf_char ch) {
     }
 }
 
-scf_string *scf_string_with_encoding(scf_operation *op, scf_encoding encoding) {
+scf_string *scf_string_create(scf_operation *op) {
     scf_string *result = scf_alloc(op, sizeof(scf_string));
-    result->encoding = encoding;
     result->char_count = 0;
     result->buf = scf_buffer_create(op, INITIAL_STRING_SIZE);
     return result;
 }
 
 void scf_string_append_char(scf_string *s, scf_char c) {
-    if (s->encoding == c.encoding) {
-        scf_buffer_append_bytes(&s->buf, c.bytes, c.byte_count);
-    } else {
-        scf_codepoint cp = scf_codepoint_from_char(c);
-        scf_char converted = scf_char_from_codepoint(cp, s->encoding, NULL);
-        scf_buffer_append_bytes(&s->buf, converted.bytes, converted.byte_count);
-    }
+    scf_char converted = scf_convert_char(c, SCF_UTF8);
+    scf_buffer_append_bytes(&s->buf, converted.bytes, converted.byte_count);
     
     s->char_count++;
 }
 
 int scf_string_cmp(const scf_string *s1, const scf_string *s2) {
     int result;
-    if (s1->encoding == s2->encoding) {
-        size_t s1_byte_count = s1->buf.size;
-        size_t s2_byte_count = s2->buf.size;
-        size_t number_of_bytes_to_compare = MIN(s1_byte_count, s2_byte_count);
-        result = memcmp(s1->buf.data, s2->buf.data, number_of_bytes_to_compare);
-        if (result == 0) {
-            result = CMP(s1_byte_count, s2_byte_count);
-        }
-    } else {
-        size_t s1_char_count = s1->char_count;
-        size_t s2_char_count = s2->char_count;
-        size_t number_of_chars_to_compare = MIN(s1_char_count, s2_char_count);
-        scf_string_iterator iter1 = scf_string_start(s1);
-        scf_string_iterator iter2 = scf_string_start(s2);
-        result = 0;
-        for (size_t i = 0; i < number_of_chars_to_compare && result == 0; i++) {
-            scf_char ch1, ch2;
-            scf_string_next(&iter1, &ch1);
-            scf_string_next(&iter2, &ch2);
-            result = scf_char_cmp(ch1, ch2);
-        }
-
-        if (result == 0) {
-            result = CMP(s1_char_count, s2_char_count);
-        }
+    size_t s1_byte_count = s1->buf.size;
+    size_t s2_byte_count = s2->buf.size;
+    size_t number_of_bytes_to_compare = MIN(s1_byte_count, s2_byte_count);
+    result = memcmp(s1->buf.data, s2->buf.data, number_of_bytes_to_compare);
+    if (result == 0) {
+        result = CMP(s1_byte_count, s2_byte_count);
     }
     
     return result;
 }
 
-
-scf_string *scf_string_convert(const scf_string *s, scf_encoding target_encoding) {
+scf_buffer scf_string_to_bytes(const scf_string *s, scf_encoding target_encoding) {
     scf_operation *op = scf_get_operation(s->buf.data);
-    scf_string *result = scf_string_with_encoding(op, target_encoding);
-    scf_string_append(result, s);
+    scf_buffer result = scf_buffer_create(op, s->char_count);
+    if (target_encoding == SCF_UTF8) {
+        scf_buffer_append(&result, &s->buf);
+    } else {
+        scf_string_iterator iter = scf_string_start(s);
+        scf_char ch;
+        while (scf_string_next(&iter, &ch)) {
+            scf_codepoint cp = scf_codepoint_from_char(ch);
+            scf_char converted = scf_char_from_codepoint(cp, target_encoding, NULL);
+            scf_buffer_append_bytes(&result, converted.bytes, converted.byte_count);
+        }
+    }
+    
     return result;
 }
 
@@ -301,14 +275,14 @@ static bool string_next(scf_string_iterator *iter, scf_char *c, scf_err_context 
     }
     
     scf_char result;
-    result.encoding = iter->s->encoding;
+    result.encoding = SCF_UTF8;
     int byte_count = get_byte_count(iter->s, iter->index);
     if (byte_count == -1) {
-        decoding_failure(iter->s->encoding, ec);
+        decoding_failure(SCF_UTF8, ec);
     }
     
     if (c) {
-        c->encoding = iter->s->encoding;
+        c->encoding = SCF_UTF8;
         c->byte_count = byte_count;
         memcpy(c->bytes, iter->s->buf.data + iter->index, byte_count);
     }
@@ -324,53 +298,48 @@ bool scf_string_next(scf_string_iterator *iter, scf_char *c) {
 static void utf8_prev(scf_string_iterator *iter, scf_char *c) {
     const unsigned char *data = iter->s->buf.data;
     size_t index = iter->index;
-    c->encoding = SCF_UTF8;
+    int byte_count;
     unsigned char byte = data[--index];
     if ((byte & 0x80) == 0) {
-        c->byte_count = 1;
+        byte_count = 1;
         goto done;
     }
 
-    if ((byte & 0xC0) != 0x80) decoding_failure(SCF_UTF8, NULL);
+    if (!matches_mask(byte, 0x80)) decoding_failure(SCF_UTF8, NULL);
     if (index-- == 0) decoding_failure(SCF_UTF8, NULL);
     byte = data[index];
-    if ((byte & 0xE0) == 0xC0) {
-        c->byte_count = 2;
+    if (matches_mask(byte, 0xC0)) {
+        byte_count = 2;
         goto done;
     }
     
-    if ((byte & 0xC0) != 0x80) decoding_failure(SCF_UTF8, NULL);
+    if (!matches_mask(byte, 0x80)) decoding_failure(SCF_UTF8, NULL);
     if (index-- == 0) decoding_failure(SCF_UTF8, NULL);
     byte = data[index];
-    if ((byte & 0xF0) == 0xE0) {
-        c->byte_count = 3;
+    if (matches_mask(byte, 0xE0)) {
+        byte_count = 3;
         goto done;
     }
     
-    if ((byte & 0xC0) != 0x80) decoding_failure(SCF_UTF8, NULL);
+    if (!matches_mask(byte, 0x80)) decoding_failure(SCF_UTF8, NULL);
     if (index-- == 0) decoding_failure(SCF_UTF8, NULL);
     byte = data[index];
-    if ((byte & 0xF8) == 0xF0) {
-        c->byte_count = 4;
+    if (matches_mask(byte, 0xF0)) {
+        byte_count = 4;
         goto done;
     }
-    
+
     decoding_failure(SCF_UTF8, NULL);
 done:
-    for (int i = 0; i < c->byte_count; i++) {
-        c->bytes[i] = data[index + i];
+    if (c) {
+        c->encoding = SCF_UTF8;
+        c->byte_count = byte_count;
+        for (int i = 0; i < c->byte_count; i++) {
+            c->bytes[i] = data[index + i];
+        }
     }
     
     iter->index = index;
-}
-
-static void utf16_prev(scf_string_iterator *iter, scf_char *c) {
-    if ((iter->index % 2) != 0) invalid_utf16_iterator(NULL);
-    c->encoding = iter->s->encoding;
-    iter->index -= 2;
-    c->byte_count = 2;
-    c->bytes[0] = iter->s->buf.data[iter->index];
-    c->bytes[1] = iter->s->buf.data[iter->index + 1];
 }
 
 bool scf_string_prev(scf_string_iterator *iter, scf_char *c) {
@@ -378,32 +347,14 @@ bool scf_string_prev(scf_string_iterator *iter, scf_char *c) {
         return false;
     }
 
-    switch (iter->s->encoding) {
-        case SCF_UTF8:
-            utf8_prev(iter, c);
-            break;
-        case SCF_UTF16_BE:
-        case SCF_UTF16_LE:
-            utf16_prev(iter, c);
-            break;
-        default:
-            unsupported_encoding(NULL);
-    }
+    utf8_prev(iter, c);
     
     return true;
 }
 
 void scf_string_append(scf_string *s1, const scf_string *s2) {
-    if (s1->encoding == s2->encoding) {
-        scf_buffer_append(&s1->buf, &s2->buf);
-        s1->char_count += s2->char_count;
-    } else {
-        scf_string_iterator iter = scf_string_start(s2);
-        scf_char ch;
-        while (scf_string_next(&iter, &ch)) {
-            scf_string_append_char(s1, ch);
-        }
-    }
+    scf_buffer_append(&s1->buf, &s2->buf);
+    s1->char_count += s2->char_count;
 }
 
 void scf_string_append_cstr(scf_string *s, const char *cstr) {
@@ -416,9 +367,8 @@ void scf_string_append_ascii(scf_string *s, char ascii) {
     scf_string_append_char(s, scf_ascii(ascii));
 }
 
-scf_string *scf_string_from_bytes(scf_operation *op, const void *p, size_t byte_count, scf_encoding encoding, scf_err_context *ec) {
+static scf_string *string_from_utf8(scf_operation *op, const void *p, size_t byte_count, scf_err_context *ec) {
     scf_string *result = scf_alloc(op, sizeof(scf_string));
-    result->encoding = encoding;
     result->buf = scf_buffer_create(op, byte_count);
     scf_buffer_append_bytes(&result->buf, p, byte_count);
     scf_string_iterator iter = scf_string_start(result);
@@ -430,32 +380,44 @@ scf_string *scf_string_from_bytes(scf_operation *op, const void *p, size_t byte_
     return result;
 }
 
-
-char *scf_string_to_cstr(const scf_string *s) {
-    const scf_string *utf8;
-    scf_string *converted = NULL;
-    if (s->encoding == SCF_UTF8) {
-        utf8 = s;
-    } else {
-        converted = scf_string_convert(s, SCF_UTF8);
-        utf8 = converted;
-    }
-    
-    scf_operation *op = scf_get_operation(s->buf.data);
-    size_t size = utf8->buf.size;
-    char *result = scf_alloc(op, size + 1);
-    memcpy(result, s->buf.data, size);
-    result[size] = '\0';
-    if (converted) {
-        scf_string_free(converted);
+static scf_string *string_from_utf16(scf_operation *op, const void *p, size_t byte_count, scf_encoding encoding, scf_err_context *ec) {
+    if (byte_count % 2 != 0) decoding_failure(encoding, ec);
+    const unsigned char *bytes = p;
+    scf_string *result = scf_string_create(op);
+    for (size_t i = 0; i < byte_count / 2; i++) {
+        size_t index = 2 * i;
+        scf_char utf16 = {encoding, 2, {bytes[index], bytes[index + 1]}};
+        scf_string_append_char(result, utf16);
     }
     
     return result;
 }
 
+scf_string *scf_string_from_bytes(scf_operation *op, const void *p, size_t byte_count, scf_encoding encoding, scf_err_context *ec) {
+    switch (encoding) {
+        case SCF_UTF8:
+            return string_from_utf8(op, p, byte_count, ec);
+        case SCF_UTF16_BE:
+        case SCF_UTF16_LE:
+            return string_from_utf16(op, p, byte_count, encoding, ec);
+        default:
+            unsupported_encoding(NULL);
+    }
+}
+
+
+char *scf_string_to_cstr(const scf_string *s) {
+    scf_operation *op = scf_get_operation(s->buf.data);
+    size_t size = s->buf.size;
+    char *result = scf_alloc(op, size + 1);
+    memcpy(result, s->buf.data, size);
+    result[size] = '\0';
+    return result;
+}
+
 scf_string *scf_string_clone(scf_operation *op, const scf_string *s) {
     op = op ? op : scf_get_operation(s);
-    scf_string *result = scf_string_with_encoding(op, s->encoding);
+    scf_string *result = scf_string_create(op);
     scf_buffer_append(&result->buf, &s->buf);
     result->char_count = s->char_count;
     return result;
@@ -475,7 +437,7 @@ scf_string_iterator scf_string_iterator_at(const scf_string *s, int index) {
 scf_string *scf_substring(scf_string_iterator start, int char_count) {
     const scf_string *s = start.s;
     scf_operation *op = scf_get_operation(s->buf.data);
-    scf_string *result = scf_string_with_encoding(op, s->encoding);
+    scf_string *result = scf_string_create(op);
     scf_string_iterator iter = start;
     for (int i = 0; i < char_count; i++) {
         scf_char ch;
@@ -544,6 +506,7 @@ void scf_stringlist_sort(scf_stringlist *list, scf_comparison_func cmp) {
 
 // extern defs for inline functions
 extern scf_string_iterator scf_string_start(const scf_string *s);
+extern scf_string_iterator scf_string_end(const scf_string *s);
 extern scf_string *scf_utf8_string(scf_operation *op);
 extern void scf_string_free(scf_string *s);
 extern scf_string *scf_string_from_cstr(scf_operation *op, const char *cstr);
@@ -552,5 +515,6 @@ extern void scf_stringlist_push(scf_stringlist *list, const scf_string *s);
 extern scf_string *scf_stringlist_pop(scf_stringlist *list);
 extern void scf_stringlist_add_cstr(scf_stringlist *list, const char *cstr);
 extern size_t scf_stringlist_size(const scf_stringlist *list);
+extern scf_char scf_convert_char(scf_char ch, scf_encoding target_encoding);
 
 

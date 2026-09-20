@@ -171,7 +171,6 @@ bool test_char_info(void) {
 bool test_string_from_bytes_utf8(void) {
     const char *cstr = "£ABC♚";
     scf_string *s = scf_string_from_bytes(&op, cstr, strlen(cstr), SCF_UTF8, NULL);
-    ASSERT_EQ(SCF_UTF8, s->encoding);
     ASSERT_EQ(5, s->char_count);
     ASSERT_EQ(8, s->buf.size);
     int i = 0;
@@ -187,7 +186,40 @@ bool test_string_from_bytes_utf8(void) {
     ;
 }
 
-bool test_iterator_utf8(void) {
+bool test_string_from_bytes_utf16(void) {
+    const unsigned char bytes[] = {0, 0xA3, 0, 65, 0, 66, 0, 67, 0x26, 0x5A};
+    scf_string *s = scf_string_from_bytes(&op, bytes, sizeof(bytes), SCF_UTF16_BE, NULL);
+    ASSERT_EQ(5, s->char_count);
+    ASSERT_EQ(8, s->buf.size);
+    int i = 0;
+    unsigned char *data = s->buf.data;
+    return ASSERT_EQ(0xC2, data[i++])
+    && ASSERT_EQ(0xA3, data[i++])
+    && ASSERT_EQ(65, data[i++])
+    && ASSERT_EQ(66, data[i++])
+    && ASSERT_EQ(67, data[i++])
+    && ASSERT_EQ(0xE2, data[i++])
+    && ASSERT_EQ(0x99, data[i++])
+    && ASSERT_EQ(0x9A, data[i++])
+    ;
+}
+
+bool test_string_from_bytes_invalid(void) {
+    const unsigned char bytes[] = {0xC2, 0xA3, 65, 0x80, 66};
+    bool result;
+    SCF_TRY(ec) {
+        scf_string_from_bytes(&op, bytes, sizeof(bytes), SCF_UTF8, &ec);
+        result = ASSERT_FAILURE("Didn't expect to get here!");
+    }
+    SCF_CATCH {
+        result = ASSERT_EQ(SCF_INVALID_STRING_OPERATION, ec.err_info.code);
+    }
+    SCF_END_TRY
+
+    return result;
+}
+
+bool test_iterator_next(void) {
     const char *cstr = "£ABC♚";
     scf_string *s = scf_string_from_bytes(&op, cstr, strlen(cstr), SCF_UTF8, NULL);
     scf_string_iterator iter = scf_string_start(s);
@@ -227,84 +259,49 @@ bool test_iterator_utf8(void) {
     return result;
 }
 
-bool test_iterator_utf16(void) {
-    const char cstr[] = {0, 0xA3, 0, 65, 0, 66, 0, 67, 0x26, 0x5A};
-    scf_string *s = scf_string_from_bytes(&op, cstr, 10, SCF_UTF16_BE, NULL);
-    scf_string_iterator iter = scf_string_start(s);
+bool test_iterator_prev(void) {
+    const char *cstr = "£ABC♚";
+    scf_string *s = scf_string_from_bytes(&op, cstr, strlen(cstr), SCF_UTF8, NULL);
+    scf_string_iterator iter = scf_string_end(s);
     scf_char ch;
     bool result = true;
     
-    result = result && ASSERT_TRUE(scf_string_next(&iter, &ch))
+    result = result && ASSERT_TRUE(scf_string_prev(&iter, &ch))
+    && ASSERT_EQ(3, ch.byte_count)
+    && ASSERT_EQ(0xE2, ch.bytes[0])
+    && ASSERT_EQ(0x99, ch.bytes[1])
+    && ASSERT_EQ(0x9A, ch.bytes[2])
+    ;
+    
+    result = result && ASSERT_TRUE(scf_string_prev(&iter, &ch))
+    && ASSERT_EQ(1, ch.byte_count)
+    && ASSERT_EQ(67, ch.bytes[0])
+    ;
+    
+    result = result && ASSERT_TRUE(scf_string_prev(&iter, &ch))
+    && ASSERT_EQ(1, ch.byte_count)
+    && ASSERT_EQ(66, ch.bytes[0])
+    ;
+    
+    result = result && ASSERT_TRUE(scf_string_prev(&iter, &ch))
+    && ASSERT_EQ(1, ch.byte_count)
+    && ASSERT_EQ(65, ch.bytes[0])
+    ;
+    
+    result = result && ASSERT_TRUE(scf_string_prev(&iter, &ch))
     && ASSERT_EQ(2, ch.byte_count)
-    && ASSERT_EQ(0, ch.bytes[0])
+    && ASSERT_EQ(0xC2, ch.bytes[0])
     && ASSERT_EQ(0xA3, ch.bytes[1])
     ;
     
-    result = result && ASSERT_TRUE(scf_string_next(&iter, &ch))
-    && ASSERT_EQ(2, ch.byte_count)
-    && ASSERT_EQ(0, ch.bytes[0])
-    && ASSERT_EQ(65, ch.bytes[1])
-    ;
-    
-    result = result && ASSERT_TRUE(scf_string_next(&iter, &ch))
-    && ASSERT_EQ(2, ch.byte_count)
-    && ASSERT_EQ(0, ch.bytes[0])
-    && ASSERT_EQ(66, ch.bytes[1])
-    ;
-    
-    result = result && ASSERT_TRUE(scf_string_next(&iter, &ch))
-    && ASSERT_EQ(2, ch.byte_count)
-    && ASSERT_EQ(0, ch.bytes[0])
-    && ASSERT_EQ(67, ch.bytes[1])
-    ;
-    
-    result = result && ASSERT_TRUE(scf_string_next(&iter, &ch))
-    && ASSERT_EQ(2, ch.byte_count)
-    && ASSERT_EQ(0x26, ch.bytes[0])
-    && ASSERT_EQ(0x5A, ch.bytes[1])
-    ;
-    
-    result = result && ASSERT_FALSE(scf_string_next(&iter, &ch));
+    result = result && ASSERT_FALSE(scf_string_prev(&iter, &ch));
 
     return result;
 }
 
-bool test_string_convert(void) {
-    const char *cstr = "£ABC♚";
-    scf_string *utf8 = scf_string_from_bytes(&op, cstr, strlen(cstr), SCF_UTF8, NULL);
-    scf_string *utf16 = scf_string_convert(utf8, SCF_UTF16_BE);
-    bool result = ASSERT_EQ(SCF_UTF16_BE, utf16->encoding)
-    && ASSERT_EQ(5, utf16->char_count)
-    && ASSERT_EQ(10, utf16->buf.size);
-    int i = 0;
-    unsigned char *data = utf16->buf.data;
-    return result && ASSERT_EQ(0, data[i++])
-    && ASSERT_EQ(0xA3, data[i++])
-    && ASSERT_EQ(0, data[i++])
-    && ASSERT_EQ(65, data[i++])
-    && ASSERT_EQ(0, data[i++])
-    && ASSERT_EQ(66, data[i++])
-    && ASSERT_EQ(0, data[i++])
-    && ASSERT_EQ(67, data[i++])
-    && ASSERT_EQ(0x26, data[i++])
-    && ASSERT_EQ(0x5A, data[i++])
-    ;
-}
-
-bool test_string_append_utf8_utf8(void) {
+bool test_string_append(void) {
     scf_string *s1 = scf_string_from_cstr(&op, "£123");
     scf_string *s2 = scf_string_from_cstr(&op, ".45");
-    scf_string_append(s1, s2);
-    return ASSERT_EQ(7, s1->char_count)
-    && ASSERT_EQ(8, s1->buf.size)
-    && ASSERT_EQ(0, memcmp(s1->buf.data, "£123.45", 8))
-    ;
-}
-
-bool test_string_append_utf8_utf16(void) {
-    scf_string *s1 = scf_string_from_cstr(&op, "£123");
-    char utf16[] = {0, '.', 0, '4', 0, '5'};
-    scf_string *s2 = scf_string_from_bytes(&op, utf16, sizeof(utf16), SCF_UTF16_BE, NULL);
     scf_string_append(s1, s2);
     return ASSERT_EQ(7, s1->char_count)
     && ASSERT_EQ(8, s1->buf.size)
@@ -322,25 +319,11 @@ bool test_char_cmp(void) {
     ;
 }
 
-bool test_string_cmp_same_encoding(void) {
+bool test_string_cmp(void) {
     scf_string *s1 = scf_string_from_cstr(&op, "abc");
     scf_string *s2 = scf_string_from_cstr(&op, "abc");
     scf_string *s3 = scf_string_from_cstr(&op, "abc£");
     scf_string *s4 = scf_string_from_cstr(&op, "aa");
-    
-    return ASSERT_EQ(0, scf_string_cmp(s1, s2))
-    && ASSERT_EQ(-1, scf_string_cmp(s1, s3))
-    && ASSERT_EQ(1, scf_string_cmp(s3, s1))
-    && ASSERT_EQ(1, scf_string_cmp(s1, s4))
-    && ASSERT_EQ(-1, scf_string_cmp(s4, s1))
-    ;
-}
-
-bool test_string_cmp_different_encodings(void) {
-    scf_string *s1 = scf_string_from_cstr(&op, "abc");
-    scf_string *s2 = scf_string_convert(scf_string_from_cstr(&op, "abc"), SCF_UTF16_BE);
-    scf_string *s3 = scf_string_convert(scf_string_from_cstr(&op, "abc£"), SCF_UTF16_BE);
-    scf_string *s4 = scf_string_convert(scf_string_from_cstr(&op, "aa"), SCF_UTF16_LE);
     
     return ASSERT_EQ(0, scf_string_cmp(s1, s2))
     && ASSERT_EQ(-1, scf_string_cmp(s1, s3))
@@ -443,14 +426,14 @@ BEGIN_TEST_GROUP(string_tests)
     TEST(test_scf_codepoint_from_utf8_char)
     TEST(test_char_info)
     TEST(test_string_from_bytes_utf8)
-    TEST(test_string_convert)
-    TEST(test_iterator_utf8)
-    TEST(test_iterator_utf16)
-    TEST(test_string_append_utf8_utf8)
-    TEST(test_string_append_utf8_utf16)
+    TEST(test_string_from_bytes_utf16)
+    TEST(test_string_from_bytes_invalid)
+    TEST(test_iterator_next)
+    TEST(test_iterator_prev)
+    TEST(test_string_append)
     TEST(test_char_cmp)
-    TEST(test_string_cmp_same_encoding)
-    TEST(test_string_cmp_different_encodings)
+    TEST(test_string_cmp)
+    TEST(test_string_cmp)
     TEST(test_substring)
     TEST(test_string_clone)
     TEST(test_stringlist_add_and_get)

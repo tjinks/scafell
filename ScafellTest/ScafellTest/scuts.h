@@ -63,10 +63,7 @@ void register_##group_name(void) { \
 
 #define REGISTER(tg) extern void register_##tg(void); register_##tg()
 
-#define ASSERT_FAILURE(message) \
-do { \
-    return assert_failure((message), __FILE__, __LINE__); \
-} while (0)
+#define ASSERT_FAILURE(message) (assert_failure((message), __FILE__, __LINE__))
 
 #define ASSERT_EQ(a, b) (_Generic((b), \
 unsigned char: assert_eq_number(__FILE__, __LINE__, (long long)(a), (long long)(b)), \

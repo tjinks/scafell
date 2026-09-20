@@ -30,7 +30,6 @@ typedef struct {
 } scf_char;
 
 typedef struct {
-    scf_encoding encoding;
     int char_count;
     scf_buffer buf;
 } scf_string;
@@ -50,6 +49,15 @@ int scf_char_cmp(scf_char ch1, scf_char ch2);
 
 scf_codepoint scf_codepoint_from_char(scf_char ch);
 
+inline scf_char scf_convert_char(scf_char ch, scf_encoding target_encoding) {
+    if (ch.encoding == target_encoding) {
+        return ch;
+    }
+    
+    scf_codepoint cp = scf_codepoint_from_char(ch);
+    return scf_char_from_codepoint(cp, target_encoding, NULL);
+}
+
 scf_char scf_char_to_lower(scf_char ch);
 
 scf_char scf_char_to_upper(scf_char ch);
@@ -57,17 +65,14 @@ scf_char scf_char_to_upper(scf_char ch);
 int scf_char_to_int(scf_char ch);
 
 inline scf_char scf_ascii(char c) {
+    if ((c & 0x80) != 0) scf_raise_fatal_error(SCF_INVALID_STRING_OPERATION, "Non-ASCII character passed to scf_ascii() function");
     scf_char result = {SCF_UTF8, 1, (unsigned char)c};
     return result;
 }
 
-scf_string *scf_string_with_encoding(scf_operation *op, scf_encoding encoding);
+scf_string *scf_string_create(scf_operation *op);
 
-inline scf_string *scf_utf8_string(scf_operation *op) {
-    return scf_string_with_encoding(op, SCF_UTF8);
-}
-
-scf_string *scf_string_from_bytes(scf_operation *op, const void *p, size_t byte_count, scf_encoding encoding, scf_err_context *);
+scf_string *scf_string_from_bytes(scf_operation *op, const void *p, size_t byte_count, scf_encoding enc, scf_err_context *);
 
 inline scf_string *scf_string_from_cstr(scf_operation *op, const char *cstr) {
     return scf_string_from_bytes(op, cstr, strlen(cstr), SCF_UTF8, NULL);
@@ -75,7 +80,7 @@ inline scf_string *scf_string_from_cstr(scf_operation *op, const char *cstr) {
 
 int scf_string_cmp(const scf_string *s1, const scf_string *s2);
 
-scf_string *scf_string_convert(const scf_string *s, scf_encoding target_encoding);
+scf_buffer scf_string_to_bytes(const scf_string *s, scf_encoding target_encoding);
 
 void scf_string_append(scf_string *s1, const scf_string *s2);
 
