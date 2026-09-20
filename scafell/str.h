@@ -90,8 +90,6 @@ void scf_string_append_ascii(scf_string *s, char ascii);
 
 void scf_string_append_char(scf_string *s, scf_char c);
 
-void scf_string_remove(scf_string *s, scf_string_iterator from, int char_count);
-
 char *scf_string_to_cstr(const scf_string *s);
 
 scf_string *scf_substring(scf_string_iterator start, int char_count);

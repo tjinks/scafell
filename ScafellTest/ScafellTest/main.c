@@ -17,5 +17,6 @@ int main(int argc, const char * argv[]) {
     REGISTER(string_tests);
     REGISTER(buffer_tests);
     REGISTER(err_handling_tests);
+    REGISTER(unix_file_io_tests);
     return scuts(argc, argv);
 }

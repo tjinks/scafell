@@ -12,10 +12,10 @@
 
 static SCF_OPERATION(op);
 
-void init_string_tests(void) {
+void string_tests_init(void) {
 }
 
-void cleanup_string_tests(void) {
+void string_tests_cleanup(void) {
     scf_complete(&op);
 }
 
@@ -420,8 +420,8 @@ bool test_stringlist_sort(void) {
 }
 
 BEGIN_TEST_GROUP(string_tests)
-    INIT(init_string_tests)
-    CLEANUP(cleanup_string_tests)
+    INIT(string_tests_init)
+    CLEANUP(string_tests_cleanup)
     TEST(test_scf_utf8_char_from_codepoint_utf8)
     TEST(test_scf_codepoint_from_utf8_char)
     TEST(test_char_info)
@@ -440,14 +440,4 @@ BEGIN_TEST_GROUP(string_tests)
     TEST(test_stringlist_insert)
     TEST(test_stringlist_remove)
     TEST(test_stringlist_sort)
-/*
-    TEST(test_char_info)
-    TEST(test_invalid_char_info)
-    TEST(test_string_from_cstr_valid)
-    TEST(test_string_from_cstr_invalid)
-    TEST(test_utf8_current_and_next)
-    TEST(test_utf8_prev)
-    TEST(test_scf_substring)
-    TEST(test_utf8_iterator_at)
- */
 END_TEST_GROUP

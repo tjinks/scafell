@@ -38,10 +38,6 @@ static noreturn void decoding_failure(scf_encoding enc, scf_err_context *ec) {
     scf_raise_error(scf_err_info_create(SCF_INVALID_STRING_OPERATION, msg), ec);
 }
 
-static noreturn void invalid_utf16_iterator(scf_err_context *ec) {
-    scf_raise_error(scf_err_info_create(SCF_INVALID_STRING_OPERATION, "Invalid UTF16 iterator"), ec);
-}
-
 static inline bool matches_mask(unsigned char byte, unsigned char mask) {
     unsigned char mask2 = (mask >> 1) | 0x80;
     return (byte & mask2) == mask;
@@ -131,33 +127,71 @@ static scf_codepoint codepoint_from_utf16_char(scf_char ch) {
     }
 }
 
-static int get_byte_count(const scf_string *s, size_t offset) {
-    int result = -1;
-    if (offset >= s->buf.size) return -1;
-    
-    unsigned char disc = s->buf.data[offset];
-    
-    if (disc <= 0x7F) {
+static inline int get_utf8_byte_count(unsigned char first_byte) {
+    if (first_byte <= 0x7F) {
         return 1;
-    }
-    
-    if (matches_mask(disc, 0xC0)) {
-        result = 2;
-    } else if (matches_mask(disc, 0xE0)) {
-        result = 3;
-    } else if (matches_mask(disc, 0xF0)) {
-        result = 4;
+    } else if (matches_mask(first_byte, 0xC0)) {
+        return 2;
+    } else if (matches_mask(first_byte, 0xE0)) {
+        return 3;
+    } else if (matches_mask(first_byte, 0xF0)) {
+        return 4;
     } else {
         return -1;
     }
-    
-    if (offset + result > s->buf.size) return -1;
+}
 
-    for (int i = 1; i < result; i++) {
-        if (!matches_mask(s->buf.data[offset + 1], 0x80)) return -1;
+static int validate_and_count_utf8_chars(const void *p, size_t size) {
+    const unsigned char *bytes = p;
+    size_t index = 0;
+    int result = 0;
+    for (;;) {
+        if (index == size) {
+            return result;
+        }
+        
+        int byte_count = get_utf8_byte_count(bytes[index]);
+        if (byte_count == -1 || index + byte_count > size) {
+            return -1;
+        }
+        
+        scf_char ch = {SCF_UTF8, byte_count};
+        
+        switch (byte_count) {
+            case 4:
+                if (!matches_mask(bytes[index + 3], 0x80)) {
+                    return -1;
+                }
+                
+                ch.bytes[3] = bytes[index + 3];
+            case 3:
+                if (!matches_mask(bytes[index + 2], 0x80)) {
+                    return -1;
+                }
+                
+                ch.bytes[2] = bytes[index + 2];
+            case 2:
+                if (!matches_mask(bytes[index + 1], 0x80)) {
+                    return -1;
+                }
+                
+                ch.bytes[1] = bytes[index + 1];
+            case 1:
+                ch.bytes[0] = bytes[index];
+                break;
+            default:
+                return -1;
+        }
+
+        scf_codepoint cp = scf_codepoint_from_char(ch);
+        if (scf_get_char_info(cp).category == UC_NONE) return -1;
+        index += byte_count;
+        result++;
     }
-    
-    return result;
+}
+
+static int validate_and_count_utf16_chars(const void *p, size_t size, scf_encoding encoding) {
+    return (size % 2 == 0 ? (int)(size / 2) : -1);
 }
 
 scf_char scf_char_from_codepoint(scf_codepoint cp, scf_encoding enc, scf_err_context *ec) {
@@ -269,16 +303,20 @@ scf_buffer scf_string_to_bytes(const scf_string *s, scf_encoding target_encoding
     return result;
 }
 
-static bool string_next(scf_string_iterator *iter, scf_char *c, scf_err_context *ec) {
+bool scf_string_next(scf_string_iterator *iter, scf_char *c) {
     if (iter->index == iter->s->buf.size) {
         return false;
     }
     
     scf_char result;
     result.encoding = SCF_UTF8;
-    int byte_count = get_byte_count(iter->s, iter->index);
+    int byte_count = get_utf8_byte_count(iter->s->buf.data[iter->index]);
     if (byte_count == -1) {
-        decoding_failure(SCF_UTF8, ec);
+        decoding_failure(SCF_UTF8, NULL);
+    }
+    
+    if (iter->index + byte_count > iter->s->buf.size) {
+        decoding_failure(SCF_UTF8, NULL);
     }
     
     if (c) {
@@ -291,46 +329,20 @@ static bool string_next(scf_string_iterator *iter, scf_char *c, scf_err_context 
     return true;
 }
 
-bool scf_string_next(scf_string_iterator *iter, scf_char *c) {
-    return string_next(iter, c, NULL);
-}
-
-static void utf8_prev(scf_string_iterator *iter, scf_char *c) {
+bool scf_string_prev(scf_string_iterator *iter, scf_char *c) {
+    if (iter->index == 0) {
+        return false;
+    }
+    
     const unsigned char *data = iter->s->buf.data;
-    size_t index = iter->index;
-    int byte_count;
-    unsigned char byte = data[--index];
-    if ((byte & 0x80) == 0) {
-        byte_count = 1;
-        goto done;
-    }
-
-    if (!matches_mask(byte, 0x80)) decoding_failure(SCF_UTF8, NULL);
-    if (index-- == 0) decoding_failure(SCF_UTF8, NULL);
-    byte = data[index];
-    if (matches_mask(byte, 0xC0)) {
-        byte_count = 2;
-        goto done;
+    size_t index = iter->index - 1;
+    int byte_count = 1;
+    while (matches_mask(data[index], 0x80)) {
+        if (index == 0 || byte_count == 4) decoding_failure(SCF_UTF8, NULL);
+        index--;
+        byte_count++;
     }
     
-    if (!matches_mask(byte, 0x80)) decoding_failure(SCF_UTF8, NULL);
-    if (index-- == 0) decoding_failure(SCF_UTF8, NULL);
-    byte = data[index];
-    if (matches_mask(byte, 0xE0)) {
-        byte_count = 3;
-        goto done;
-    }
-    
-    if (!matches_mask(byte, 0x80)) decoding_failure(SCF_UTF8, NULL);
-    if (index-- == 0) decoding_failure(SCF_UTF8, NULL);
-    byte = data[index];
-    if (matches_mask(byte, 0xF0)) {
-        byte_count = 4;
-        goto done;
-    }
-
-    decoding_failure(SCF_UTF8, NULL);
-done:
     if (c) {
         c->encoding = SCF_UTF8;
         c->byte_count = byte_count;
@@ -340,17 +352,9 @@ done:
     }
     
     iter->index = index;
-}
-
-bool scf_string_prev(scf_string_iterator *iter, scf_char *c) {
-    if (iter->index == 0) {
-        return false;
-    }
-
-    utf8_prev(iter, c);
-    
     return true;
 }
+
 
 void scf_string_append(scf_string *s1, const scf_string *s2) {
     scf_buffer_append(&s1->buf, &s2->buf);
@@ -368,20 +372,24 @@ void scf_string_append_ascii(scf_string *s, char ascii) {
 }
 
 static scf_string *string_from_utf8(scf_operation *op, const void *p, size_t byte_count, scf_err_context *ec) {
+    int char_count = validate_and_count_utf8_chars(p, byte_count);
+    if (char_count == -1) {
+        decoding_failure(SCF_UTF8, ec);
+    }
+    
     scf_string *result = scf_alloc(op, sizeof(scf_string));
     result->buf = scf_buffer_create(op, byte_count);
     scf_buffer_append_bytes(&result->buf, p, byte_count);
-    scf_string_iterator iter = scf_string_start(result);
-    result->char_count = 0;
-    while (string_next(&iter, NULL, ec)) {
-        result->char_count++;
-    }
-    
+    result->char_count = char_count;
     return result;
 }
 
 static scf_string *string_from_utf16(scf_operation *op, const void *p, size_t byte_count, scf_encoding encoding, scf_err_context *ec) {
-    if (byte_count % 2 != 0) decoding_failure(encoding, ec);
+    int char_count = validate_and_count_utf16_chars(p, byte_count, encoding);
+    if (char_count == -1) {
+        decoding_failure(encoding, ec);
+    }
+    
     const unsigned char *bytes = p;
     scf_string *result = scf_string_create(op);
     for (size_t i = 0; i < byte_count / 2; i++) {
@@ -424,10 +432,20 @@ scf_string *scf_string_clone(scf_operation *op, const scf_string *s) {
 }
 
 scf_string_iterator scf_string_iterator_at(const scf_string *s, int index) {
-    scf_string_iterator result = scf_string_start(s);
-    for (int i = 0; i < index; i++) {
-        if (!scf_string_next(&result, NULL)) {
-            break;
+    scf_string_iterator result;
+    if (index >= 0) {
+        result = scf_string_start(s);
+        for (int i = 0; i < index; i++) {
+            if (!scf_string_next(&result, NULL)) {
+                break;
+            }
+        }
+    } else {
+        result = scf_string_end(s);
+        for (int i = 0; i < -index; i++) {
+            if (!scf_string_prev(&result, NULL)) {
+                break;
+            }
         }
     }
     
