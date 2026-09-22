@@ -15,17 +15,15 @@
 #include "abstract_io.h"
 #include "osdefs.h"
 
-void scf_os_file_reader_create(scf_operation *op,
+scf_reader *scf_os_file_reader_create(scf_operation *op,
                                const scf_string *path,
                                size_t buffer_size,
-                               scf_reader **result,
                                scf_err_context *ec);
 
-void scf_os_file_writer_create(scf_operation *op,
+scf_writer *scf_os_file_writer_create(scf_operation *op,
                                const scf_string *path,
                                size_t buffer_size,
                                bool append,
-                               scf_writer **result,
                                scf_err_context *ec);
 
 

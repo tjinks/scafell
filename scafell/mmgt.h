@@ -25,10 +25,11 @@ typedef struct scf_mem_block {
 } scf_mem_block;
 
 typedef struct scf_operation {
+    int alloc_count;
     struct scf_mem_block *first;
 } scf_operation;
 
-#define SCF_OPERATION(name) scf_operation name = {NULL}
+#define SCF_OPERATION(name) scf_operation name = {0, NULL}
 
 typedef struct {
     size_t size;
@@ -56,6 +57,10 @@ inline void scf_buffer_append(scf_buffer *buf1, const scf_buffer *buf2) {
 
 inline void scf_buffer_insert(scf_buffer *buf1, scf_buffer *buf2, size_t before) {
     scf_buffer_insert_bytes(buf1, buf2->data, before, buf2->size);
+}
+
+inline void scf_buffer_clear(scf_buffer *buf) {
+    buf->size = 0;
 }
 
 inline void scf_buffer_free(scf_buffer *buf) {

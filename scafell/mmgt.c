@@ -41,18 +41,21 @@ static void add_block(scf_operation *operation, scf_mem_block *block) {
     block->operation = operation;
     block->next = operation->first;
     operation->first = block;
+    operation->alloc_count++;
 }
 
 static void remove_block(scf_mem_block *block) {
     scf_operation *operation = block->operation;
     if (block == operation->first) {
         operation->first = block->next;
+        operation->alloc_count--;
         return;
     }
     
     for (scf_mem_block *current = operation->first; current; current = current->next) {
         if (current->next == block) {
             current->next = block->next;
+            operation->alloc_count--;
             return;
         }
     }
@@ -101,6 +104,7 @@ void scf_complete(scf_operation *operation) {
     }
     
     operation->first = NULL;
+    operation->alloc_count = 0;
 }
 
 scf_operation *scf_get_operation(const void *p) {
@@ -168,6 +172,8 @@ extern void scf_buffer_append(scf_buffer *buf1, const scf_buffer *buf2);
 extern void scf_buffer_insert(scf_buffer *buf1, scf_buffer *buf2, size_t before);
 
 extern void scf_buffer_free(scf_buffer *buf);
+
+extern void scf_buffer_clear(scf_buffer *buf);
 
 
 
