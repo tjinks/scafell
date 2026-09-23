@@ -110,7 +110,19 @@ inline scf_string_iterator scf_string_end(const scf_string *s) {
     return result;
 }
 
+inline bool scf_is_string_start(scf_string_iterator iter) {
+    return iter.index == 0;
+}
+
+inline bool scf_is_string_end(scf_string_iterator iter) {
+    return iter.index == iter.s->buf.size;
+}
+
 scf_string *scf_string_clone(scf_operation *op, const scf_string *s);
+
+bool scf_string_has_prefix(scf_string *s, scf_string *prefix);
+
+bool scf_string_has_suffix(scf_string *s, scf_string *suffix);
 
 inline void scf_string_free(scf_string *s) {
     scf_buffer_free(&s->buf);
@@ -130,6 +142,8 @@ void scf_stringlist_clear(scf_stringlist *list);
 void scf_stringlist_insert(scf_stringlist *list, const scf_string *s, size_t before);
 
 scf_string *scf_stringlist_remove(scf_stringlist *list, size_t index);
+
+scf_string *scf_stringlist_combine(scf_stringlist *list, scf_string *separator);
 
 void scf_stringlist_sort(scf_stringlist *list, scf_comparison_func cmp);
 

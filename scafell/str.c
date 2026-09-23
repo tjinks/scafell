@@ -469,6 +469,45 @@ scf_string *scf_substring(scf_string_iterator start, int char_count) {
     return result;
 }
 
+bool scf_string_has_prefix(scf_string *s, scf_string *prefix) {
+    if (s->char_count >= prefix->char_count) {
+        return memcmp(s->buf.data, prefix->buf.data, prefix->buf.size) == 0;
+    } else {
+        return false;
+    }
+}
+
+bool scf_string_has_suffix(scf_string *s, scf_string *suffix) {
+    if (s->char_count >= suffix->char_count) {
+        size_t compare_from = s->buf.size - suffix->buf.size;
+        return memcmp(s->buf.data + compare_from, suffix->buf.data, suffix->buf.size) == 0;
+    } else {
+        return false;
+    }
+}
+
+scf_stringlist *scf_string_split(scf_string *s, scf_char delimiter) {
+    scf_operation *op = scf_get_operation(s);
+    scf_stringlist *result = scf_stringlist_create(op);
+    if (s->char_count) {
+        scf_string_iterator iter = scf_string_start(s);
+        scf_char ch;
+        scf_string *current_string = scf_string_create(op);
+        while (scf_string_next(&iter, &ch)) {
+            if (scf_char_cmp(ch, delimiter) == 0) {
+                scf_stringlist_add(result, current_string);
+                current_string = scf_string_create(op);
+            } else {
+                scf_string_append_char(current_string, ch);
+            }
+        }
+        
+        if (current_string->char_count) scf_stringlist_add(result, current_string);
+    }
+    
+    return result;
+}
+
 scf_stringlist *scf_stringlist_create(scf_operation *op) {
     scf_stringlist *result = scf_alloc(op, sizeof(scf_stringlist));
     result->strings = scf_list_create(op, sizeof(scf_string *), INITIAL_STRINGLIST_SIZE);
@@ -506,6 +545,18 @@ scf_string *scf_stringlist_remove(scf_stringlist *list, size_t index) {
     return result;
 }
 
+scf_string *scf_stringlist_combine(scf_stringlist *list, scf_string *separator) {
+    scf_string *result = scf_string_create(scf_get_operation(list));
+    for (size_t i = 0; i < list->strings.size; i++) {
+        if (i > 0) scf_string_append(result, separator);
+        scf_string *next = scf_stringlist_get(list, i);
+        scf_string_append(result, next);
+    }
+    
+    return result;
+}
+
+
 static int default_comparison_func(const void *p1, const void *p2) {
     const scf_string *s1 = SCF_DEREF(const scf_string *, p1);
     const scf_string *s2 = SCF_DEREF(const scf_string *, p2);
@@ -525,6 +576,8 @@ void scf_stringlist_sort(scf_stringlist *list, scf_comparison_func cmp) {
 // extern defs for inline functions
 extern scf_string_iterator scf_string_start(const scf_string *s);
 extern scf_string_iterator scf_string_end(const scf_string *s);
+extern bool scf_is_string_start(scf_string_iterator iter);
+extern bool scf_is_string_end(scf_string_iterator iter);
 extern scf_string *scf_utf8_string(scf_operation *op);
 extern void scf_string_free(scf_string *s);
 extern scf_string *scf_string_from_cstr(scf_operation *op, const char *cstr);
