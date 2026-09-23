@@ -419,6 +419,32 @@ bool test_stringlist_sort(void) {
     return result;
 }
 
+bool test_stringlist_combine(void) {
+    scf_stringlist *list = scf_stringlist_create(&op);
+    scf_stringlist_add_cstr(list, "abc");
+    scf_stringlist_add_cstr(list, "def");
+    scf_stringlist_add_cstr(list, "123");
+    scf_string *separator = scf_string_from_cstr(&op, "/");
+    scf_string *result = scf_stringlist_combine(list, separator);
+    char *result_as_cstr = scf_string_to_cstr(result);
+    return ASSERT_EQ("abc/def/123", result_as_cstr);
+}
+
+bool test_string_split(void) {
+    scf_string *s = scf_string_from_cstr(&op, "abc,,def,12345");
+    scf_stringlist *list = scf_string_split(s, scf_ascii(','));
+    bool result = ASSERT_EQ(4, list->strings.size);
+    scf_string *s0 = scf_stringlist_get(list, 0);
+    scf_string *s1 = scf_stringlist_get(list, 1);
+    scf_string *s2 = scf_stringlist_get(list, 2);
+    scf_string *s3 = scf_stringlist_get(list, 3);
+    result = result && ASSERT_EQ("abc", scf_string_to_cstr(s0));
+    result = result && ASSERT_EQ("", scf_string_to_cstr(s1));
+    result = result && ASSERT_EQ("def", scf_string_to_cstr(s2));
+    result = result && ASSERT_EQ("12345", scf_string_to_cstr(s3));
+    return result;
+}
+
 BEGIN_TEST_GROUP(string_tests)
     INIT(string_tests_init)
     CLEANUP(string_tests_cleanup)
@@ -440,4 +466,6 @@ BEGIN_TEST_GROUP(string_tests)
     TEST(test_stringlist_insert)
     TEST(test_stringlist_remove)
     TEST(test_stringlist_sort)
+    TEST(test_stringlist_combine)
+    TEST(test_string_split)
 END_TEST_GROUP

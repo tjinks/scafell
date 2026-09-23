@@ -124,6 +124,8 @@ bool scf_string_has_prefix(scf_string *s, scf_string *prefix);
 
 bool scf_string_has_suffix(scf_string *s, scf_string *suffix);
 
+scf_stringlist *scf_string_split(scf_string *s, scf_char delimiter);
+
 inline void scf_string_free(scf_string *s) {
     scf_buffer_free(&s->buf);
     scf_free(s);

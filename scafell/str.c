@@ -346,9 +346,7 @@ bool scf_string_prev(scf_string_iterator *iter, scf_char *c) {
     if (c) {
         c->encoding = SCF_UTF8;
         c->byte_count = byte_count;
-        for (int i = 0; i < c->byte_count; i++) {
-            c->bytes[i] = data[index + i];
-        }
+        memcpy(c->bytes, iter->s->buf.data + index, byte_count);
     }
     
     iter->index = index;

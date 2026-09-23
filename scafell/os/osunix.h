@@ -14,6 +14,4 @@ typedef int scf_os_error_code;
 
 typedef int scf_os_file_handle;
 
-//typedef int scf_codepoint;
-
 #endif /* osunix_h */
