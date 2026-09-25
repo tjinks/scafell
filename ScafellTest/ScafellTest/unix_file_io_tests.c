@@ -13,7 +13,7 @@
 #include "err_handling.h"
 #include "mmgt.h"
 #include "str.h"
-#include "os/unix_file_io.h"
+#include "file_io.h"
 #include "os/osdefs.h"
 
 SCF_OPERATION(op);
@@ -91,11 +91,11 @@ bool test_write_and_read_single_byte(void) {
     scf_string *test_file_path = scf_string_clone(NULL, path_to_working_dir);
     scf_string_append(test_file_path, scf_string_from_cstr(&op, "/testfile"));
     SCF_TRY(ec) {
-        scf_writer *writer = scf_os_file_writer_create(&op, test_file_path, 5, false, &ec);
+        scf_os_file_writer *writer = scf_os_file_writer_create(&op, test_file_path, 5, false, &ec);
         scf_write_single_byte(writer, 123, &ec);
         scf_close_writer(writer, &ec);
         
-        scf_reader *reader = scf_os_file_reader_create(&op, test_file_path, 0, &ec);
+        scf_os_file_reader *reader = scf_os_file_reader_create(&op, test_file_path, 0, &ec);
         unsigned char byte = 0;
         result = result && ASSERT_TRUE(scf_read_single_byte(reader, &byte, &ec));
         result = result && ASSERT_EQ(123, byte);
@@ -115,16 +115,16 @@ bool test_write_and_read_block(void) {
     scf_string *test_file_path = scf_string_clone(NULL, path_to_working_dir);
     scf_string_append(test_file_path, scf_string_from_cstr(&op, "/testfile"));
     SCF_TRY(ec) {
-        scf_writer *writer = scf_os_file_writer_create(&op, test_file_path, 0, false, &ec);
+        scf_os_file_writer *writer = scf_os_file_writer_create(&op, test_file_path, 0, false, &ec);
         scf_write_single_byte(writer, '1', &ec);
         scf_write_bytes(writer, (unsigned char *)"23456789", 8, &ec);
         scf_close_writer(writer, &ec);
         
-        scf_reader *reader = scf_os_file_reader_create(&op, test_file_path, 5, &ec);
+        scf_os_file_reader *reader = scf_os_file_reader_create(&op, test_file_path, 5, &ec);
         unsigned char byte = 0;
         result = result && ASSERT_TRUE(scf_read_single_byte(reader, &byte, &ec));
         result = result && ASSERT_EQ('1', byte);
-        scf_buffer buf = scf_read_bytes(reader, 10, &ec);
+        scf_buffer buf = scf_read_bytes(&op, reader, 10, &ec);
         result = result && ASSERT_EQ(8, buf.size);
         result = result && ASSERT_EQ(0, memcmp("23456789", buf.data, 8));
         result = result && ASSERT_FALSE(scf_read_single_byte(reader, &byte, &ec));
@@ -149,12 +149,12 @@ bool test_read_with_callback(void) {
     scf_string *test_file_path = scf_string_clone(NULL, path_to_working_dir);
     scf_string_append(test_file_path, scf_string_from_cstr(&op, "/testfile"));
     SCF_TRY(ec) {
-        scf_writer *writer = scf_os_file_writer_create(&op, test_file_path, 0, false, &ec);
+        scf_os_file_writer *writer = scf_os_file_writer_create(&op, test_file_path, 0, false, &ec);
         scf_write_single_byte(writer, '1', &ec);
         scf_write_bytes(writer, (unsigned char *)"23456789", 8, &ec);
         scf_close_writer(writer, &ec);
         
-        scf_reader *reader = scf_os_file_reader_create(&op, test_file_path, 5, &ec);
+        scf_os_file_reader *reader = scf_os_file_reader_create(&op, test_file_path, 5, &ec);
         unsigned char byte;
         scf_read_single_byte(reader, &byte, &ec);
         result = result && ASSERT_EQ('1', byte);
