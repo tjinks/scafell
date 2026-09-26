@@ -28,6 +28,7 @@ typedef enum {
     ,SCF_FILE_DOES_NOT_EXIST
     ,SCF_ACCESS_DENIED
     ,SCF_DEVICE_FULL
+    ,SCF_NOT_A_DIRECTORY
 } scf_error_code;
 
 #define SCF_MAX_ERR_MSG_SIZE (1000)

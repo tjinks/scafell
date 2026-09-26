@@ -92,15 +92,15 @@ bool test_write_and_read_single_byte(void) {
     scf_string_append(test_file_path, scf_string_from_cstr(&op, "/testfile"));
     SCF_TRY(ec) {
         scf_os_file_writer *writer = scf_os_file_writer_create(&op, test_file_path, 5, false, &ec);
-        scf_write_single_byte(writer, 123, &ec);
-        scf_close_writer(writer, &ec);
+        scf_os_write_single_byte(writer, 123, &ec);
+        scf_os_close_writer(writer, &ec);
         
         scf_os_file_reader *reader = scf_os_file_reader_create(&op, test_file_path, 0, &ec);
         unsigned char byte = 0;
-        result = result && ASSERT_TRUE(scf_read_single_byte(reader, &byte, &ec));
+        result = result && ASSERT_TRUE(scf_os_read_single_byte(reader, &byte, &ec));
         result = result && ASSERT_EQ(123, byte);
-        result = result && ASSERT_FALSE(scf_read_single_byte(reader, &byte, &ec));
-        scf_close_reader(reader, &ec);
+        result = result && ASSERT_FALSE(scf_os_read_single_byte(reader, &byte, &ec));
+        scf_os_close_reader(reader, &ec);
     }
     SCF_CATCH {
         result = ASSERT_FAILURE(ec.err_info.message);
@@ -116,19 +116,19 @@ bool test_write_and_read_block(void) {
     scf_string_append(test_file_path, scf_string_from_cstr(&op, "/testfile"));
     SCF_TRY(ec) {
         scf_os_file_writer *writer = scf_os_file_writer_create(&op, test_file_path, 0, false, &ec);
-        scf_write_single_byte(writer, '1', &ec);
-        scf_write_bytes(writer, (unsigned char *)"23456789", 8, &ec);
-        scf_close_writer(writer, &ec);
+        scf_os_write_single_byte(writer, '1', &ec);
+        scf_os_write_bytes(writer, (unsigned char *)"23456789", 8, &ec);
+        scf_os_close_writer(writer, &ec);
         
         scf_os_file_reader *reader = scf_os_file_reader_create(&op, test_file_path, 5, &ec);
         unsigned char byte = 0;
-        result = result && ASSERT_TRUE(scf_read_single_byte(reader, &byte, &ec));
+        result = result && ASSERT_TRUE(scf_os_read_single_byte(reader, &byte, &ec));
         result = result && ASSERT_EQ('1', byte);
-        scf_buffer buf = scf_read_bytes(&op, reader, 10, &ec);
+        scf_buffer buf = scf_os_read_bytes(&op, reader, 10, &ec);
         result = result && ASSERT_EQ(8, buf.size);
         result = result && ASSERT_EQ(0, memcmp("23456789", buf.data, 8));
-        result = result && ASSERT_FALSE(scf_read_single_byte(reader, &byte, &ec));
-        scf_close_reader(reader, &ec);
+        result = result && ASSERT_FALSE(scf_os_read_single_byte(reader, &byte, &ec));
+        scf_os_close_reader(reader, &ec);
     }
     SCF_CATCH {
         result = ASSERT_FAILURE(ec.err_info.message);
@@ -150,20 +150,20 @@ bool test_read_with_callback(void) {
     scf_string_append(test_file_path, scf_string_from_cstr(&op, "/testfile"));
     SCF_TRY(ec) {
         scf_os_file_writer *writer = scf_os_file_writer_create(&op, test_file_path, 0, false, &ec);
-        scf_write_single_byte(writer, '1', &ec);
-        scf_write_bytes(writer, (unsigned char *)"23456789", 8, &ec);
-        scf_close_writer(writer, &ec);
+        scf_os_write_single_byte(writer, '1', &ec);
+        scf_os_write_bytes(writer, (unsigned char *)"23456789", 8, &ec);
+        scf_os_close_writer(writer, &ec);
         
         scf_os_file_reader *reader = scf_os_file_reader_create(&op, test_file_path, 5, &ec);
         unsigned char byte;
-        scf_read_single_byte(reader, &byte, &ec);
+        scf_os_read_single_byte(reader, &byte, &ec);
         result = result && ASSERT_EQ('1', byte);
         scf_buffer data = scf_buffer_create(&op, 4);
-        scf_read_with_callback(reader, callback, &data, &ec);
+        scf_os_read_with_callback(reader, callback, &data, &ec);
         result = result && ASSERT_EQ(8, data.size);
         result = result && ASSERT_EQ(0, memcmp("23456789", data.data, 8));
-        result = result && ASSERT_FALSE(scf_read_single_byte(reader, &byte, &ec));
-        scf_close_reader(reader, &ec);
+        result = result && ASSERT_FALSE(scf_os_read_single_byte(reader, &byte, &ec));
+        scf_os_close_reader(reader, &ec);
     }
     SCF_CATCH {
         result = ASSERT_FAILURE(ec.err_info.message);

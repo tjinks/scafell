@@ -52,7 +52,7 @@ static void empty(scf_os_file_writer *writer, scf_err_context *ec) {
 static void cleanup_reader(void *p) {
     scf_os_file_reader *reader = p;
     SCF_TRY(ec) {
-        scf_close_reader(reader, &ec);
+        scf_os_close_reader(reader, &ec);
     }
     SCF_CATCH { }
     SCF_END_TRY
@@ -61,14 +61,14 @@ static void cleanup_reader(void *p) {
 static void cleanup_writer(void *p) {
     scf_os_file_writer *writer = p;
     SCF_TRY(ec) {
-        scf_close_writer(writer, &ec);
+        scf_os_close_writer(writer, &ec);
     }
     SCF_CATCH { }
     SCF_END_TRY
 }
 
 
-void scf_close_reader(scf_os_file_reader *reader, scf_err_context *ec) {
+void scf_os_close_reader(scf_os_file_reader *reader, scf_err_context *ec) {
     int fd = reader->handle;
     if (close(fd) == 0) {
         return;
@@ -77,7 +77,7 @@ void scf_close_reader(scf_os_file_reader *reader, scf_err_context *ec) {
     scf_raise_error(scf_os_err_info_create(SCF_IO_ERROR, errno), ec);
 }
 
-void scf_close_writer(scf_os_file_writer *writer, scf_err_context *ec) {
+void scf_os_close_writer(scf_os_file_writer *writer, scf_err_context *ec) {
     empty(writer, ec);
     int fd = writer->handle;
     if (close(fd) == 0) {
@@ -148,7 +148,7 @@ scf_os_file_writer *scf_os_file_writer_create(scf_operation *op,
     return result;
 }
 
-scf_buffer scf_read_bytes(scf_operation *op, scf_os_file_reader *reader, size_t count, scf_err_context *ec) {
+scf_buffer scf_os_read_bytes(scf_operation *op, scf_os_file_reader *reader, size_t count, scf_err_context *ec) {
     op = op ? op : scf_get_operation(reader);
     scf_buffer result = scf_buffer_create(op, count);
     size_t xfr_count = 0;
@@ -178,7 +178,7 @@ scf_buffer scf_read_bytes(scf_operation *op, scf_os_file_reader *reader, size_t 
     return result;
 }
 
-void scf_read_with_callback(scf_os_file_reader *reader, scf_read_callback callback, void *additional_data, scf_err_context *ec) {
+void scf_os_read_with_callback(scf_os_file_reader *reader, scf_read_callback callback, void *additional_data, scf_err_context *ec) {
     if (reader->index > 0) {
         size_t initial_size = reader->buf.size - reader->index;
         if (initial_size > 0) {
@@ -207,7 +207,7 @@ void scf_read_with_callback(scf_os_file_reader *reader, scf_read_callback callba
 }
 
 
-void scf_write_bytes(scf_os_file_writer *writer, const unsigned char *bytes, size_t count, scf_err_context *ec) {
+void scf_os_write_bytes(scf_os_file_writer *writer, const unsigned char *bytes, size_t count, scf_err_context *ec) {
     size_t xfr_count = 0;
     while (xfr_count < count) {
         size_t space_in_buffer = writer->buf.capacity - writer->buf.size;
@@ -226,4 +226,57 @@ void scf_write_bytes(scf_os_file_writer *writer, const unsigned char *bytes, siz
         }
     }
 }
+
+scf_list scf_os_get_directory_contents(scf_operation *op, const scf_string *path, scf_err_context *ec) {
+    const char *path_as_cstr = scf_string_to_cstr(path);
+    DIR *reader = opendir(path_as_cstr);
+    if (!reader) {
+        switch (errno) {
+            case EACCES:
+                scf_raise_error(scf_os_err_info_create(SCF_ACCESS_DENIED, errno), ec);
+            case ENOENT:
+                scf_raise_error(scf_os_err_info_create(SCF_FILE_DOES_NOT_EXIST, errno), ec);
+            case ENOTDIR:
+                scf_raise_error(scf_os_err_info_create(SCF_NOT_A_DIRECTORY, errno), ec);
+            default:
+                scf_raise_error(scf_os_err_info_create(SCF_IO_ERROR, errno), ec);
+
+        }
+    }
+    
+    scf_list result = scf_list_create(op, sizeof(scf_fs_entity_data), 10);
+    for (;;) {
+        errno = 0;
+        struct dirent *entry = readdir(reader);
+        if (!entry) {
+            switch (errno) {
+                case 0:
+                    closedir(reader);
+                    return result;
+                default:
+                    scf_raise_error(scf_os_err_info_create(SCF_IO_ERROR, errno), ec);
+            }
+        }
+        
+        scf_fs_entity_data data;
+        switch (entry->d_type) {
+            case DT_REG:
+                data.type = SCF_FILE;
+                break;
+            case DT_LNK:
+                data.type = SCF_LINK;
+                break;
+            case DT_DIR:
+                data.type = SCF_DIRECTORY;
+                break;
+            default:
+                data.type = SCF_OTHER;
+                break;
+        }
+        
+        data.name = scf_string_from_cstr(op, entry->d_name);
+        scf_list_add(&result, &data);
+    }
+}
+
 

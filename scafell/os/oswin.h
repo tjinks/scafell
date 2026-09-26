@@ -5,8 +5,8 @@
 //  Created by Tony on 16/06/2025.
 //
 
-#ifndef osunix_h
-#define osunix_h
+#ifndef oswin_h
+#define oswin_h
 
 #include <Windows.h>
 
@@ -16,6 +16,4 @@ typedef DWORD scf_os_error_code;
 
 typedef HANDLE scf_os_file_handle;
 
-//typedef wchar_t scf_codepoint;
-
-#endif /* osunix_h */
+#endif /* oswin_h */
