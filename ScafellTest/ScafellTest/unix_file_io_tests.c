@@ -14,6 +14,7 @@
 #include "mmgt.h"
 #include "str.h"
 #include "file_io.h"
+#include "scf.h"
 #include "os/osdefs.h"
 
 SCF_OPERATION(op);
@@ -78,12 +79,14 @@ static void delete_working_dir(void) {
 }
 
 void unix_file_io_tests_init(void) {
+    scf_init();
     create_working_dir();
 }
 
 void unix_file_io_tests_cleanup(void) {
     delete_working_dir();
     scf_complete(&op);
+    scf_shutdown();
 }
 
 bool test_write_and_read_single_byte(void) {
@@ -173,11 +176,66 @@ bool test_read_with_callback(void) {
     return result;
 }
 
+static int compare_filenames(const void *p1, const void *p2) {
+    scf_fs_entity_data data1, data2;
+    data1 = *((scf_fs_entity_data *)p1);
+    data2 = *((scf_fs_entity_data *)p2);
+    return scf_string_cmp(data1.name, data2.name);
+}
+
+bool test_get_directory_contents(void) {
+    static char *filenames[] = {"abc.txt", "def.txt", "xyz123.txt"};
+    for (size_t i = 0; i < 3; i++) {
+        scf_string *filename = scf_string_from_cstr(&op, filenames[i]);
+        scf_string *path = scf_string_clone(&op, path_to_working_dir);
+        scf_path_append(path, filename);
+        SCF_TRY(ec) {
+            scf_os_file_writer *writer = scf_os_file_writer_create(&op, path, 0, false, &ec);
+            scf_os_close_writer(writer, &ec);
+        }
+        SCF_CATCH {
+            return ASSERT_FAILURE(ec.err_info.message);
+        }
+        SCF_END_TRY
+    }
+
+    bool result = true;
+    SCF_TRY(ec) {
+        scf_list files = scf_os_get_directory_contents(&op, path_to_working_dir, &ec);
+        scf_list_sort(&files, compare_filenames);
+        ASSERT_EQ(3, files.size);
+        for (size_t i = 0; i < 3; i++) {
+            scf_fs_entity_data data;
+            scf_list_get(&files, i, &data);
+            char *name = scf_string_to_cstr(data.name);
+            switch (i) {
+                case 0:
+                    result = result && ASSERT_EQ("abc.txt", name);
+                    break;
+                case 1:
+                    result = result && ASSERT_EQ("def.txt", name);
+                    break;
+                case 2:
+                    result = result && ASSERT_EQ("xyz123.txt", name);
+                    break;
+            }
+        }
+    }
+    SCF_CATCH {
+        result = ASSERT_FAILURE(ec.err_info.message);
+    }
+    SCF_END_TRY
+    
+    return result;
+    
+}
+
 BEGIN_TEST_GROUP(unix_file_io_tests)
     INIT(unix_file_io_tests_init)
     CLEANUP(unix_file_io_tests_cleanup)
     TEST(test_write_and_read_single_byte)
     TEST(test_write_and_read_block)
     TEST(test_read_with_callback)
+    TEST(test_get_directory_contents)
 END_TEST_GROUP
 

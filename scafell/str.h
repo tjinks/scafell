@@ -120,9 +120,9 @@ inline bool scf_is_string_end(scf_string_iterator iter) {
 
 scf_string *scf_string_clone(scf_operation *op, const scf_string *s);
 
-bool scf_string_has_prefix(scf_string *s, scf_string *prefix);
+bool scf_string_has_prefix(const scf_string *s, const scf_string *prefix);
 
-bool scf_string_has_suffix(scf_string *s, scf_string *suffix);
+bool scf_string_has_suffix(const scf_string *s, const scf_string *suffix);
 
 scf_stringlist *scf_string_split(scf_string *s, scf_char delimiter);
 

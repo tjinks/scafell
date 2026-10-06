@@ -38,9 +38,16 @@ typedef enum {
 typedef struct {
     scf_fs_entity_id id;
     scf_string *name;
+    scf_string *parent_path;
     scf_fs_entity_type type;
     scf_filesize_type size;
 } scf_fs_entity_data;
+
+scf_string *scf_current_dir(scf_operation *op);
+
+bool scf_is_absolute_path(const scf_string *path);
+
+void scf_path_append(scf_string *base, const scf_string *appendee);
 
 scf_os_file_reader *scf_os_file_reader_create(scf_operation *op,
                                const scf_string *path,

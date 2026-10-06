@@ -40,7 +40,7 @@ typedef struct {
 void *scf_alloc(scf_operation *operation, size_t required);
 void *scf_alloc_with_cleanup(scf_operation *operation, size_t required, scf_cleanup_func cleanup);
 void *scf_realloc(void *p, size_t required);
-void scf_free(void *p);
+void scf_free(const void *p);
 void scf_complete(scf_operation *operation);
 scf_operation *scf_get_operation(const void *p);
 void scf_reassign(void *p, scf_operation *op);

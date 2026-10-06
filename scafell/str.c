@@ -467,7 +467,7 @@ scf_string *scf_substring(scf_string_iterator start, int char_count) {
     return result;
 }
 
-bool scf_string_has_prefix(scf_string *s, scf_string *prefix) {
+bool scf_string_has_prefix(const scf_string *s, const scf_string *prefix) {
     if (s->char_count >= prefix->char_count) {
         return memcmp(s->buf.data, prefix->buf.data, prefix->buf.size) == 0;
     } else {
@@ -475,7 +475,7 @@ bool scf_string_has_prefix(scf_string *s, scf_string *prefix) {
     }
 }
 
-bool scf_string_has_suffix(scf_string *s, scf_string *suffix) {
+bool scf_string_has_suffix(const scf_string *s, const scf_string *suffix) {
     if (s->char_count >= suffix->char_count) {
         size_t compare_from = s->buf.size - suffix->buf.size;
         return memcmp(s->buf.data + compare_from, suffix->buf.data, suffix->buf.size) == 0;

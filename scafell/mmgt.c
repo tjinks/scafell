@@ -82,10 +82,10 @@ void *scf_realloc(void *p, size_t required) {
     return new_block->data;
 }
 
-void scf_free(void *p) {
+void scf_free(const void *p) {
     scf_mem_block *block = get_block(p);
     remove_block(block);
-    free(p);
+    free(block);
 }
 
 void scf_complete(scf_operation *operation) {

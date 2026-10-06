@@ -6,11 +6,13 @@
 //
 
 #include <errno.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include "file_io.h"
 #include "err_handling.h"
 #include "str.h"
+#include "scf_internal.h"
 
 static const size_t default_buffer_size = 1024;
 
@@ -19,15 +21,14 @@ static bool fill(scf_os_file_reader *reader, scf_err_context *ec) {
     ssize_t read_count = read(fd, reader->buf.data, reader->buf.capacity);
     reader->index = 0;
     reader->buf.size = read_count;
-    if (read_count == 0) {
-        return false;
+    switch (read_count) {
+        case 0:
+            return false;
+        case -1:
+            scf_raise_error(scf_os_err_info_create(SCF_IO_ERROR, errno), ec);
+        default:
+            return true;
     }
-    
-    if (read_count == -1) {
-        scf_raise_error(scf_os_err_info_create(SCF_IO_ERROR, errno), ec);
-    }
-    
-    return true;
 }
 
 static void empty(scf_os_file_writer *writer, scf_err_context *ec) {
@@ -69,22 +70,37 @@ static void cleanup_writer(void *p) {
 
 
 void scf_os_close_reader(scf_os_file_reader *reader, scf_err_context *ec) {
-    int fd = reader->handle;
-    if (close(fd) == 0) {
-        return;
+    if (reader->is_open) {
+        reader->is_open = false;
+        int fd = reader->handle;
+        if (close(fd) == 0) {
+            return;
+        }
+        
+        scf_raise_error(scf_os_err_info_create(SCF_IO_ERROR, errno), ec);
     }
-    
-    scf_raise_error(scf_os_err_info_create(SCF_IO_ERROR, errno), ec);
 }
 
 void scf_os_close_writer(scf_os_file_writer *writer, scf_err_context *ec) {
-    empty(writer, ec);
-    int fd = writer->handle;
-    if (close(fd) == 0) {
-        return;
+    if (writer->is_open) {
+        writer->is_open = false;
+        int fd = writer->handle;
+
+        SCF_TRY(ec1) {
+            empty(writer, &ec1);
+        }
+        SCF_CATCH {
+            close(fd);
+            scf_raise_error(ec1.err_info, ec);
+        }
+        SCF_END_TRY
+        
+        if (close(fd) == 0) {
+            return;
+        }
+        
+        scf_raise_error(scf_os_err_info_create(SCF_IO_ERROR, errno), ec);
     }
-    
-    scf_raise_error(scf_os_err_info_create(SCF_IO_ERROR, errno), ec);
 }
 
 scf_os_file_reader *scf_os_file_reader_create(scf_operation *op,
@@ -228,8 +244,17 @@ void scf_os_write_bytes(scf_os_file_writer *writer, const unsigned char *bytes, 
 }
 
 scf_list scf_os_get_directory_contents(scf_operation *op, const scf_string *path, scf_err_context *ec) {
-    const char *path_as_cstr = scf_string_to_cstr(path);
+    const char *path_as_cstr;
+    if (scf_is_absolute_path(path)) {
+        path_as_cstr = scf_string_to_cstr(path);
+    } else {
+        scf_string *full_path = scf_current_dir(op);
+        scf_path_append(full_path, path);
+        path_as_cstr = scf_string_to_cstr(full_path);
+    }
+    
     DIR *reader = opendir(path_as_cstr);
+    scf_free(path_as_cstr);
     if (!reader) {
         switch (errno) {
             case EACCES:
@@ -259,6 +284,11 @@ scf_list scf_os_get_directory_contents(scf_operation *op, const scf_string *path
         }
         
         scf_fs_entity_data data;
+        data.name = scf_string_from_cstr(op, entry->d_name);
+        
+        if (scf_string_cmp(data.name, scf_dot) == 0) continue;
+        if (scf_string_cmp(data.name, scf_dotdot) == 0) continue;
+
         switch (entry->d_type) {
             case DT_REG:
                 data.type = SCF_FILE;
@@ -274,9 +304,51 @@ scf_list scf_os_get_directory_contents(scf_operation *op, const scf_string *path
                 break;
         }
         
-        data.name = scf_string_from_cstr(op, entry->d_name);
         scf_list_add(&result, &data);
     }
+}
+
+scf_string *scf_current_dir(scf_operation *op) {
+    size_t buf_size = 10;
+    do {
+        char *buffer = malloc(buf_size);
+        if (!buffer) {
+            scf_raise_fatal_error(SCF_OUT_OF_MEMORY, "Out of memory!");
+        }
+        
+        if (getcwd(buffer, buf_size)) {
+            scf_string *result = scf_string_from_cstr(op, buffer);
+            free(buffer);
+            return result;
+        }
+        
+        free(buffer);
+        buf_size *= 2;
+    } while (errno == ERANGE);
+    
+    scf_raise_fatal_os_error(SCF_IO_ERROR, errno);
+}
+
+bool scf_is_absolute_path(const scf_string *path) {
+    scf_string_iterator iter = scf_string_start(path);
+    scf_char first_char;
+    if (scf_string_next(&iter, &first_char)) {
+        return scf_char_cmp(first_char, scf_path_separator) == 0;
+    }
+        
+    return false;
+}
+
+void scf_path_append(scf_string *base, const scf_string *appendee) {
+    if (scf_is_absolute_path(appendee)) {
+        scf_raise_fatal_error(SCF_INVALID_PATH, "Attempting to append an absolute path");
+    }
+
+    if (!scf_string_has_suffix(base, scf_path_separator_string)) {
+        scf_string_append(base, scf_path_separator_string);
+    }
+    
+    scf_string_append(base, appendee);
 }
 
 
