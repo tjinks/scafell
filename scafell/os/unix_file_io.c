@@ -202,6 +202,7 @@ void scf_os_read_with_callback(scf_os_file_reader *reader, scf_read_callback cal
             scf_buffer buf = scf_buffer_create(&op, initial_size);
             scf_buffer_append_bytes(&buf, reader->buf.data + reader->index, initial_size);
             if (!callback(&buf, additional_data, ec)) {
+                scf_complete(&op);
                 return;
             }
             
