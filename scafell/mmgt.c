@@ -15,6 +15,10 @@
 static const int HEADER_SIZE = offsetof(scf_mem_block, data);
 static const int MIN_CAPACITY = 4;
 
+static SCF_OPERATION(lifetime);
+scf_operation * const scf_lifetime = &lifetime;
+
+
 static void default_exhaustion_handler(void) {
     scf_raise_fatal_error(SCF_OUT_OF_MEMORY, "Out of memory!");
 }

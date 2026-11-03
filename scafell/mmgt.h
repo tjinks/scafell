@@ -31,6 +31,8 @@ typedef struct scf_operation {
 
 #define SCF_OPERATION(name) scf_operation name = {0, NULL}
 
+extern scf_operation * const scf_lifetime;
+
 typedef struct {
     size_t size;
     size_t capacity;

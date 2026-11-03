@@ -14,6 +14,4 @@
 
 typedef DWORD scf_os_error_code;
 
-typedef HANDLE scf_os_file_handle;
-
 #endif /* oswin_h */

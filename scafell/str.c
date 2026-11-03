@@ -8,7 +8,7 @@
 #include <memory.h>
 #include "str.h"
 #include "ucdb.h"
-#include "os/osdefs.h"
+#include "osdefs.h"
 #include "err_handling.h"
 
 #define CMP(a, b) ((a) < (b) ? -1 : ((a) > (b) ? 1 : 0))
@@ -303,6 +303,20 @@ scf_buffer scf_string_to_bytes(const scf_string *s, scf_encoding target_encoding
     return result;
 }
 
+scf_char *scf_string_to_chars(scf_operation *op, const scf_string *s) {
+    op = op ? op : scf_get_operation(s);
+    scf_char *result = scf_alloc(op, s->char_count * sizeof(scf_char));
+    scf_string_iterator iter = scf_string_start(s);
+    for (size_t i = 0; i < s->char_count; i++) {
+        scf_char ch;
+        scf_string_next(&iter, &ch);
+        result[i] = ch;
+    }
+    
+    return result;
+}
+
+
 bool scf_string_next(scf_string_iterator *iter, scf_char *c) {
     if (iter->index == iter->s->buf.size) {
         return false;
@@ -412,8 +426,8 @@ scf_string *scf_string_from_bytes(scf_operation *op, const void *p, size_t byte_
 }
 
 
-char *scf_string_to_cstr(const scf_string *s) {
-    scf_operation *op = scf_get_operation(s->buf.data);
+char *scf_string_to_cstr(scf_operation *op, const scf_string *s) {
+    op = op ? op : scf_get_operation(s);
     size_t size = s->buf.size;
     char *result = scf_alloc(op, size + 1);
     memcpy(result, s->buf.data, size);
@@ -508,7 +522,18 @@ scf_stringlist *scf_string_split(scf_string *s, scf_char delimiter) {
 
 scf_stringlist *scf_stringlist_create(scf_operation *op) {
     scf_stringlist *result = scf_alloc(op, sizeof(scf_stringlist));
+    
     result->strings = scf_list_create(op, sizeof(scf_string *), INITIAL_STRINGLIST_SIZE);
+    return result;
+}
+
+scf_stringlist *scf_stringlist_clone(scf_operation *op, const scf_stringlist *from) {
+    op = op ? op : scf_get_operation(from);
+    scf_stringlist *result = scf_stringlist_create(op);
+    for (size_t i = 0; i < scf_stringlist_size(from); i++) {
+        scf_stringlist_add(result, scf_stringlist_get(from, i));
+    }
+    
     return result;
 }
 
@@ -585,5 +610,8 @@ extern scf_string *scf_stringlist_pop(scf_stringlist *list);
 extern void scf_stringlist_add_cstr(scf_stringlist *list, const char *cstr);
 extern size_t scf_stringlist_size(const scf_stringlist *list);
 extern scf_char scf_convert_char(scf_char ch, scf_encoding target_encoding);
+extern bool scf_char_equals(scf_char ch1, scf_char ch2);
+extern void scf_string_clear(scf_string *s);
+
 
 

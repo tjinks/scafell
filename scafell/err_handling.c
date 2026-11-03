@@ -49,13 +49,13 @@ void scf_set_fatal_err_handler(scf_fatal_err_handler handler) {
     err_handler = handler;
 }
 
-scf_err_info scf_err_info_create(scf_error_code code, const char *msg) {
+scf_err_info scf_err_info_create(int code, const char *msg) {
     scf_err_info result = {code, false, (scf_os_error_code)0};
     set_message(&result, msg);
     return result;
 }
 
-scf_err_info scf_os_err_info_create(scf_error_code scf_error, scf_os_error_code os_error) {
+scf_err_info scf_os_err_info_create(int scf_error, scf_os_error_code os_error) {
     scf_err_info result = {scf_error, true, os_error};
     
 #ifdef SCF_OS_UNIX
@@ -65,11 +65,11 @@ scf_err_info scf_os_err_info_create(scf_error_code scf_error, scf_os_error_code 
     return result;
 }
 
-noreturn void scf_raise_fatal_error(scf_error_code code, const char *msg) {
+noreturn void scf_raise_fatal_error(int code, const char *msg) {
     raise_fatal_error(scf_err_info_create(code, msg));
 }
 
-noreturn void scf_raise_fatal_os_error(scf_error_code code, scf_os_error_code os_error_code) {
+noreturn void scf_raise_fatal_os_error(int code, scf_os_error_code os_error_code) {
     scf_err_info err_info = scf_os_err_info_create(code, os_error_code);
     raise_fatal_error(err_info);
 }

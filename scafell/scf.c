@@ -12,7 +12,7 @@
 static SCF_OPERATION(global_op);
 
 void scf_init(void) {
-    scf_file_io_init(&global_op);
+
 }
 
 void scf_shutdown(void) {

@@ -341,7 +341,7 @@ bool test_substring(void) {
     && ASSERT_EQ(4, substring->buf.size)
     ;
     
-    char *cstr = scf_string_to_cstr(substring);
+    char *cstr = scf_string_to_cstr(&op, substring);
     result = result && ASSERT_EQ("£12", cstr);
     return result;
 }
@@ -350,7 +350,7 @@ bool test_string_clone(void) {
     SCF_OPERATION(op1);
     scf_string *s = scf_string_from_cstr(&op, "£123");
     scf_string *clone = scf_string_clone(&op1, s);
-    bool result = ASSERT_FALSE(s == clone) && ASSERT_EQ("£123", scf_string_to_cstr(clone));
+    bool result = ASSERT_FALSE(s == clone) && ASSERT_EQ("£123", scf_string_to_cstr(&op, clone));
     scf_complete(&op1);
     return result;
 }
@@ -364,10 +364,10 @@ bool test_stringlist_add_and_get(void) {
     scf_string *s0b = scf_stringlist_get(list, 0);
     scf_string *s1a = scf_stringlist_get(list, 1);
     scf_string *s1b = scf_stringlist_get_copy(&op, list, 1);
-    result = result && ASSERT_EQ("s0", scf_string_to_cstr(s0a));
-    result = result && ASSERT_EQ("s0", scf_string_to_cstr(s0b));
-    result = result && ASSERT_EQ("s1", scf_string_to_cstr(s1a));
-    result = result && ASSERT_EQ("s1", scf_string_to_cstr(s1b));
+    result = result && ASSERT_EQ("s0", scf_string_to_cstr(&op, s0a));
+    result = result && ASSERT_EQ("s0", scf_string_to_cstr(&op, s0b));
+    result = result && ASSERT_EQ("s1", scf_string_to_cstr(&op, s1a));
+    result = result && ASSERT_EQ("s1", scf_string_to_cstr(&op, s1b));
     
     result = result && ASSERT_TRUE(s0a == s0b);
     result = result && ASSERT_FALSE(s1a == s1b);
@@ -382,9 +382,9 @@ bool test_stringlist_insert(void) {
     scf_stringlist_insert(list, scf_string_from_cstr(&op, "ABC"), 1);
     
     bool result = ASSERT_EQ(3, scf_stringlist_size(list));
-    result = ASSERT_EQ("abc", scf_string_to_cstr(scf_stringlist_get(list, 0)));
-    result = ASSERT_EQ("ABC", scf_string_to_cstr(scf_stringlist_get(list, 1)));
-    result = ASSERT_EQ("123", scf_string_to_cstr(scf_stringlist_get(list, 2)));
+    result = ASSERT_EQ("abc", scf_string_to_cstr(&op, scf_stringlist_get(list, 0)));
+    result = ASSERT_EQ("ABC", scf_string_to_cstr(&op, scf_stringlist_get(list, 1)));
+    result = ASSERT_EQ("123", scf_string_to_cstr(&op, scf_stringlist_get(list, 2)));
 
     return result;
 }
@@ -397,8 +397,8 @@ bool test_stringlist_remove(void) {
     scf_stringlist_remove(list, 1);
     
     bool result = ASSERT_EQ(2, scf_stringlist_size(list));
-    result = ASSERT_EQ("abc", scf_string_to_cstr(scf_stringlist_get(list, 0)));
-    result = ASSERT_EQ("xyz", scf_string_to_cstr(scf_stringlist_get(list, 1)));
+    result = ASSERT_EQ("abc", scf_string_to_cstr(&op, scf_stringlist_get(list, 0)));
+    result = ASSERT_EQ("xyz", scf_string_to_cstr(&op, scf_stringlist_get(list, 1)));
 
     return result;
 }
@@ -411,10 +411,10 @@ bool test_stringlist_sort(void) {
     scf_stringlist_add_cstr(list, "ABC");
     scf_stringlist_sort(list, NULL);
     
-    bool result = ASSERT_EQ("123", scf_string_to_cstr(scf_stringlist_get(list, 0)));
-    result = ASSERT_EQ("ABC", scf_string_to_cstr(scf_stringlist_get(list, 1)));
-    result = ASSERT_EQ("ab", scf_string_to_cstr(scf_stringlist_get(list, 2)));
-    result = ASSERT_EQ("abc", scf_string_to_cstr(scf_stringlist_get(list, 3)));
+    bool result = ASSERT_EQ("123", scf_string_to_cstr(&op, scf_stringlist_get(list, 0)));
+    result = ASSERT_EQ("ABC", scf_string_to_cstr(&op, scf_stringlist_get(list, 1)));
+    result = ASSERT_EQ("ab", scf_string_to_cstr(&op, scf_stringlist_get(list, 2)));
+    result = ASSERT_EQ("abc", scf_string_to_cstr(&op, scf_stringlist_get(list, 3)));
 
     return result;
 }
@@ -426,7 +426,7 @@ bool test_stringlist_combine(void) {
     scf_stringlist_add_cstr(list, "123");
     scf_string *separator = scf_string_from_cstr(&op, "/");
     scf_string *result = scf_stringlist_combine(list, separator);
-    char *result_as_cstr = scf_string_to_cstr(result);
+    char *result_as_cstr = scf_string_to_cstr(&op, result);
     return ASSERT_EQ("abc/def/123", result_as_cstr);
 }
 
@@ -438,10 +438,10 @@ bool test_string_split(void) {
     scf_string *s1 = scf_stringlist_get(list, 1);
     scf_string *s2 = scf_stringlist_get(list, 2);
     scf_string *s3 = scf_stringlist_get(list, 3);
-    result = result && ASSERT_EQ("abc", scf_string_to_cstr(s0));
-    result = result && ASSERT_EQ("", scf_string_to_cstr(s1));
-    result = result && ASSERT_EQ("def", scf_string_to_cstr(s2));
-    result = result && ASSERT_EQ("12345", scf_string_to_cstr(s3));
+    result = result && ASSERT_EQ("abc", scf_string_to_cstr(&op, s0));
+    result = result && ASSERT_EQ("", scf_string_to_cstr(&op, s1));
+    result = result && ASSERT_EQ("def", scf_string_to_cstr(&op, s2));
+    result = result && ASSERT_EQ("12345", scf_string_to_cstr(&op, s3));
     return result;
 }
 

@@ -47,6 +47,10 @@ scf_char scf_char_from_codepoint(scf_codepoint cp, scf_encoding enc, scf_err_con
 
 int scf_char_cmp(scf_char ch1, scf_char ch2);
 
+inline bool scf_char_equals(scf_char ch1, scf_char ch2) {
+    return scf_char_cmp(ch1, ch2) == 0;
+}
+
 scf_codepoint scf_codepoint_from_char(scf_char ch);
 
 inline scf_char scf_convert_char(scf_char ch, scf_encoding target_encoding) {
@@ -90,7 +94,7 @@ void scf_string_append_ascii(scf_string *s, char ascii);
 
 void scf_string_append_char(scf_string *s, scf_char c);
 
-char *scf_string_to_cstr(const scf_string *s);
+char *scf_string_to_cstr(scf_operation *op, const scf_string *s);
 
 scf_string *scf_substring(scf_string_iterator start, int char_count);
 
@@ -126,12 +130,21 @@ bool scf_string_has_suffix(const scf_string *s, const scf_string *suffix);
 
 scf_stringlist *scf_string_split(scf_string *s, scf_char delimiter);
 
+scf_char *scf_string_to_chars(scf_operation *op, const scf_string *s);
+
 inline void scf_string_free(scf_string *s) {
     scf_buffer_free(&s->buf);
     scf_free(s);
 }
 
+inline void scf_string_clear(scf_string *s) {
+    scf_buffer_clear(&s->buf);
+    s->char_count = 0;
+}
+
 scf_stringlist *scf_stringlist_create(scf_operation *op);
+
+scf_stringlist *scf_stringlist_clone(scf_operation *op, const scf_stringlist *from);
 
 void scf_stringlist_add(scf_stringlist *list, const scf_string *s);
 
