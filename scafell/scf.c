@@ -6,8 +6,8 @@
 //
 
 #include "scf.h"
-#include "scf_internal.h"
 #include "err_handling.h"
+#include "mmgt.h"
 
 static SCF_OPERATION(global_op);
 

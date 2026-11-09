@@ -54,4 +54,9 @@ scf_codepoint scf_last_uc_codepoint(void) {
     return uc_database[UC_CHAR_COUNT - 1].codepoint;
 }
 
+void scf_foreach_uc_char(void (*callback)(scf_char_info, void *), void *additional_data) {
+    for (size_t i = 0; i < UC_CHAR_COUNT; i++) {
+        callback(uc_database[i], additional_data);
+    }
+}
 

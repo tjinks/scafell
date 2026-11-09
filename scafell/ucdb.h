@@ -29,4 +29,6 @@ scf_char_info scf_get_char_info(scf_codepoint);
 
 scf_codepoint scf_last_uc_codepoint(void);
 
+void scf_foreach_uc_char(void (*callback)(scf_char_info, void *), void *additional_data);
+
 #endif /* ucdb_h */
