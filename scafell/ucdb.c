@@ -60,3 +60,9 @@ void scf_foreach_uc_char(void (*callback)(scf_char_info, void *), void *addition
     }
 }
 
+const scf_char_info *scf_get_all_char_info(int *count) {
+    *count = UC_CHAR_COUNT;
+    return uc_database;
+}
+
+

@@ -31,4 +31,6 @@ scf_codepoint scf_last_uc_codepoint(void);
 
 void scf_foreach_uc_char(void (*callback)(scf_char_info, void *), void *additional_data);
 
+const scf_char_info *scf_get_all_char_info(int *count);
+
 #endif /* ucdb_h */
