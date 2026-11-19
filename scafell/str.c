@@ -17,6 +17,8 @@
 static const int INITIAL_STRING_SIZE = 16;
 static const int INITIAL_STRINGLIST_SIZE = 16;
 
+const scf_char SCF_ASCII_NULL = {SCF_UTF8, 1, {0}};
+
 static noreturn void unsupported_encoding(scf_err_context *ec) {
     scf_raise_error(scf_err_info_create(SCF_INVALID_STRING_OPERATION, "Unsupported character encoding"), ec);
 }
@@ -222,11 +224,43 @@ scf_codepoint scf_codepoint_from_char(scf_char ch) {
     }
 }
 
+int scf_get_ascii(scf_char ch) {
+    scf_codepoint cp = scf_codepoint_from_char(ch);
+    if (cp < 0x80) {
+        return cp;
+    } else {
+        return -1;
+    }
+}
+
 int scf_char_cmp(scf_char ch1, scf_char ch2) {
     scf_codepoint cp1 = scf_codepoint_from_char(ch1);
     scf_codepoint cp2 = scf_codepoint_from_char(ch2);
     return CMP(cp1, cp2);
 }
+
+static scf_char_category get_category(scf_char ch) {
+    scf_codepoint cp = scf_codepoint_from_char(ch);
+    scf_char_info info = scf_get_char_info(cp);
+    return info.category;
+}
+
+bool scf_is_space(scf_char ch) {
+    scf_char_category cat = get_category(ch);
+    return (cat & UC_SPACE) != 0;
+}
+
+bool scf_is_digit(scf_char ch) {
+    scf_char_category cat = get_category(ch);
+    return (cat & UC_DIGIT) != 0;
+}
+
+bool scf_is_letter(scf_char ch) {
+    scf_char_category cat = get_category(ch);
+    return (cat & UC_LETTER) != 0;
+}
+
+
 
 scf_char scf_char_to_lower(scf_char ch) {
     scf_codepoint cp = scf_codepoint_from_char(ch);
@@ -612,6 +646,8 @@ extern size_t scf_stringlist_size(const scf_stringlist *list);
 extern scf_char scf_convert_char(scf_char ch, scf_encoding target_encoding);
 extern bool scf_char_equals(scf_char ch1, scf_char ch2);
 extern void scf_string_clear(scf_string *s);
+inline bool scf_is_null(scf_char ch);
+
 
 
 

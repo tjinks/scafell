@@ -29,6 +29,8 @@ typedef struct {
     unsigned char bytes[4];
 } scf_char;
 
+extern const scf_char SCF_ASCII_NULL;
+
 typedef struct {
     int char_count;
     scf_buffer buf;
@@ -53,6 +55,8 @@ inline bool scf_char_equals(scf_char ch1, scf_char ch2) {
 
 scf_codepoint scf_codepoint_from_char(scf_char ch);
 
+int scf_get_ascii(scf_char ch);
+
 inline scf_char scf_convert_char(scf_char ch, scf_encoding target_encoding) {
     if (ch.encoding == target_encoding) {
         return ch;
@@ -67,6 +71,16 @@ scf_char scf_char_to_lower(scf_char ch);
 scf_char scf_char_to_upper(scf_char ch);
 
 int scf_char_to_int(scf_char ch);
+
+bool scf_is_space(scf_char ch);
+
+bool scf_is_digit(scf_char ch);
+
+bool scf_is_letter(scf_char ch);
+
+inline bool scf_is_null(scf_char ch) {
+    return scf_codepoint_from_char(ch) == 0;
+}
 
 inline scf_char scf_ascii(char c) {
     if ((c & 0x80) != 0) scf_raise_fatal_error(SCF_INVALID_STRING_OPERATION, "Non-ASCII character passed to scf_ascii() function");
